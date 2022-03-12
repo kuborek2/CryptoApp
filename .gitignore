@@ -56,10 +56,10 @@ buck-out
 .watchmanconfig
 
 # Android
-#.idea
+.idea
 #.gradle
 #local.properties
-#*.iml
+*.iml
 #/android/
 /android/app
 
