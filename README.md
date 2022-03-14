@@ -2,9 +2,11 @@
 Application created for University project
 
 
-Our CryptoApp color palette:
-Main plaette: <br/>
+Our CryptoApp color palette: <br/>
 #51bbe9 &nbsp; #ee6b76 &nbsp; #36a873 <br/>
+
+Main plaette: <br/>
+
 #51bbe9 &nbsp; #364954 &nbsp; #99aebb <br/>
 
 
