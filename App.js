@@ -10,7 +10,7 @@ import React from 'react';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import {
   Button,
   SafeAreaView,
@@ -35,25 +35,37 @@ import TestScreen from './TestScreen';
 
 
 
-const Tab = createBottomTabNavigator();
-const App = ({ navigation }) =>  {
-  const isDarkMode = useColorScheme() === 'dark';
+  const Tab = createBottomTabNavigator();
+  const Stack = createStackNavigator();
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  const App = ({ navigation }) =>  {
+
+  function HomeTabs() {
+    return (
+      <Tab.Navigator>
+        <Tab.Screen name="Home" component={TestScreen} />
+      </Tab.Navigator>
+    );
+  }
+  
+  function App() {
+    return (
+      <Stack.Navigator 
+        initialRouteName="TOS"
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="HomeTabs" component={HomeTabs} />
+        <Stack.Screen name="TOS" component={TermsOfUsage} />
+      </Stack.Navigator>
+    );
+  }
 
   return (
 
     <NavigationContainer>
-      <Tab.Navigator>
-
-      
-
-      <Tab.Screen name="Home" component={TestScreen} />
-      <Tab.Screen name="Favourite" component={TermsOfUsage} />
-        
-      </Tab.Navigator>
+      <App/>
     </NavigationContainer>
     
   );

@@ -19,12 +19,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TermsOfUsage = ({ navigation }) => {
 
-    const [tos , SetTos] = useState(false);
-
-
     const acceptTerms = async () => {
-        SetTos(true);  
-        AsyncStorage.setItem('acceptThisTerms','true');    
+        AsyncStorage.setItem('acceptThisTerms','true'); 
+        navigation.navigate('HomeTabs');      
     }
     
 
@@ -32,8 +29,8 @@ const TermsOfUsage = ({ navigation }) => {
         const getData = async () => {
             try {
               const termsReading = await AsyncStorage.getItem('acceptThisTerms')
-              if(termsReading != null) {
-               SetTos(true);                
+              if(termsReading != null) {         
+                navigation.navigate('HomeTabs');   
               }
             } catch(e) {
               
@@ -42,13 +39,7 @@ const TermsOfUsage = ({ navigation }) => {
           getData();
     },[])
 
- 
 
-
-
-    const Tab = createBottomTabNavigator();
-
-if( !tos ){
     return (
         <View style={styles.container}>
             <View>
@@ -66,18 +57,6 @@ if( !tos ){
     
         </View>
     );
-}else {
-    return (
-        <View style={styles.container}>
-            <View>
-                <Text style={styles.termsText}>Working</Text>
-                
-            </View>
-    
-        </View>
-    );
-}
-
 
 }
 
