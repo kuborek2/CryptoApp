@@ -114,7 +114,7 @@ const Item = ({ item }) => (
             }}
         />
         <Text style={styles.title}>{item.name}</Text>
-        <Text style={styles.counter}>{ExampleCoinExchangeRatesEuro.find(subItem => subItem.asset_id_quote === item.asset_id) == null 
+        <Text style={styles.counter}>€ {ExampleCoinExchangeRatesEuro.find(subItem => subItem.asset_id_quote === item.asset_id) == null 
                 ? '00.00' :
                 ExampleCoinExchangeRatesEuro.find(subItem => subItem.asset_id_quote === item.asset_id).rate}</Text>
     </View>
