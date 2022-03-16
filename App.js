@@ -11,6 +11,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import {
   Button,
   SafeAreaView,
@@ -38,12 +39,21 @@ import TestScreen from './TestScreen';
   const Tab = createBottomTabNavigator();
   const Stack = createStackNavigator();
 
+
+
   const App = ({ navigation }) =>  {
 
   function HomeTabs() {
     return (
       <Tab.Navigator>
-        <Tab.Screen name="Home" component={TestScreen} />
+
+        <Tab.Screen name="Home" component={TestScreen} 
+           options={{
+            tabBarIcon: ({size}) => (<Icon name="home" color="#364954" size={size} />)
+        }}
+        />
+        
+         
       </Tab.Navigator>
     );
   }
