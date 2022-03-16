@@ -10,6 +10,7 @@ import {
     Image,
     FlatList,
   } from 'react-native';
+import { Children } from 'react/cjs/react.production.min';
 
 
 let ExampleCoinData = [
@@ -99,8 +100,12 @@ let ExampleCoinExchangeRatesEuro = [
     },
 ]
 
+let checkIndexIsEven = (n) => {
+    return n % 2 == 0;
+}
+
 const Item = ({ item }) => (
-    <View style={styles.item}>
+    <View style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}>
         <Image
             style={styles.currencyIcon}
             source={{uri: ExampleCoinIconData.find(subItem => subItem.asset_id === item.asset_id) == null 
@@ -153,7 +158,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f9c2ff',
+        // backgroundColor: '#99AEBB',
         padding: 20,
         marginVertical: 8,
         marginHorizontal: 16,
