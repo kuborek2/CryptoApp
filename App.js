@@ -32,6 +32,7 @@ import {
 
 import TermsOfUsage from './TermsOfUsage';
 import TestScreen from './TestScreen';
+import HomeScreen from './HomeScreen';
 
 
 
@@ -43,7 +44,8 @@ import TestScreen from './TestScreen';
   function HomeTabs() {
     return (
       <Tab.Navigator>
-        <Tab.Screen name="Home" component={TestScreen} />
+        <Tab.Screen name="Test" component={TestScreen} />
+        <Tab.Screen name="Home" component={HomeScreen} />
       </Tab.Navigator>
     );
   }
