@@ -2,6 +2,9 @@
 Application created for University project
 
 
+Link to icons : <br/>
+https://oblador.github.io/react-native-vector-icons/ <br/> <br/>
+
 Our CryptoApp color palette: <br/>
 #51bbe9 &nbsp; #ee6b76 &nbsp; #36a873 <br/>
 
