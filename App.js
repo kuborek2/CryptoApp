@@ -33,6 +33,7 @@ import {
 
 import TermsOfUsage from './TermsOfUsage';
 import TestScreen from './TestScreen';
+import HomeScreen from './HomeScreen';
 
 
 
@@ -47,13 +48,15 @@ import TestScreen from './TestScreen';
     return (
       <Tab.Navigator>
 
-        <Tab.Screen name="Home" component={TestScreen} 
+        <Tab.Screen name="Test" component={TestScreen} 
            options={{
             tabBarIcon: ({size}) => (<Icon name="home" color="#364954" size={size} />)
         }}
         />
         
          
+        
+        <Tab.Screen name="Home" component={HomeScreen} />
       </Tab.Navigator>
     );
   }
