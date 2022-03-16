@@ -23,4 +23,8 @@ Crypto Drops: <br/>
 #ee5959 </br>
 ![image](https://user-images.githubusercontent.com/73942404/158159653-f4e30062-62e4-4c07-9f50-6ff1a278964c.png)
 
+Highly Needed shit for the future progress of the project: </br>
+![image](https://user-images.githubusercontent.com/73942404/158675749-b77c00ab-2e6f-4854-8e0c-87549f104012.png)
+
+
 
