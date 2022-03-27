@@ -10,35 +10,19 @@ import {
     Text,
     useColorScheme,
     View,
-    } from 'react-native';
-  import CheckBox from '@react-native-community/checkbox';
+
+  } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 
 
  
 
 const TermsOfUsage = ({ navigation }) => {
-    const [isDisabled, setIsDisabled] = useState(true);
-    const [isSelected, setSelection] = useState(false);
-    
-    
-
- 
 
     const acceptTerms = async () => {
         AsyncStorage.setItem('acceptThisTerms','false'); 
         navigation.navigate('HomeTabs');      
     }
-    
-    const canBeSubmitted = () => {
-        return isSelected ? setIsDisabled(true) : setIsDisabled(false);
-    };
-
-    const onCheckboxClick = () => {
-        setSelection(!isSelected);
-        return canBeSubmitted();
-    };
     
 
     useEffect(() => {
@@ -55,10 +39,9 @@ const TermsOfUsage = ({ navigation }) => {
           getData();
     },[])
 
-    
-
 
     return (
+
        
             <View style={{minHeight:'100%',minWidth:'100%',justifyContent:'center',alignItems:'center'}}>
                 <Text style={styles.termsText}>CoinApp Terms and Conditions</Text>
@@ -86,25 +69,25 @@ const TermsOfUsage = ({ navigation }) => {
             </View>
                
        
+
     );
 
 }
 
 
-
-
 const styles = StyleSheet.create({
 
+
   
+
     termsText:{
         fontSize:30,
         textAlign:'center',
         alignItems:'center',
-        paddingTop:5,
-        marginTop:20,
-        
+        paddingTop:3,
 
     },
+
     
     acceptButton:{
        
@@ -142,6 +125,7 @@ const styles = StyleSheet.create({
         elevation: 9,
         
     },
+
 
 });
 
