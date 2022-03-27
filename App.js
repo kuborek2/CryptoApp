@@ -34,7 +34,7 @@ import {
 import TermsOfUsage from './TermsOfUsage';
 import TestScreen from './TestScreen';
 import HomeScreen from './HomeScreen';
-
+import SettingsScreen from './SettingsScreen';
 
 
   const Tab = createBottomTabNavigator();
@@ -59,6 +59,13 @@ import HomeScreen from './HomeScreen';
         <Tab.Screen name="Home" component={HomeScreen} 
           options={{
             tabBarIcon: ({size}) => (<Icon name="home" color="#364954" size={size} />)
+        }}
+        
+        />
+
+        <Tab.Screen name="Settings" component={SettingsScreen} 
+          options={{
+            tabBarIcon: ({size}) => (<Icon name="setting" color="#364954" size={size} />)
         }}
         
         />
