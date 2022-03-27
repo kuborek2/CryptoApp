@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     SafeAreaView,
     ScrollView,
@@ -9,23 +9,114 @@ import {
     View,
     Image,
     FlatList,
+    Dimensions ,
   } from 'react-native';
+import {
+    LineChart,
+    BarChart,
+    PieChart,
+    ProgressChart,
+    ContributionGraph,
+    StackedBarChart
+    } from "react-native-chart-kit";
 import { Children } from 'react/cjs/react.production.min';
-import Rainbow from "./Rainbow";
+import Moment from 'moment';
 
 const customData = require('./btcVsusd.json');
 
-let checkIndexIsEven = (n) => {
-    return n % 2 == 0;
-}
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
+
 
     // <View style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}>
 
-const CurrencyScreen = ({ navigation }) => {
+const prepareData = (dataToPrepare) => {
+    let labels = [
+        Moment(dataToPrepare[0].time_period_start).format('MMMM Do YYYY'),
+        Moment(dataToPrepare[dataToPrepare.length-1].time_period_end).format('MMMM Do YYYY')
+    ];
+
+    let data = {
+        labels: labels,
+        datasets: [
+            {
+                data: dataToPrepare.map((item) => {
+                    return (item.rate_high+item.rate_low)/2;
+                })
+            }
+        ]
+    }
+
+    return data;
+}
+
+const chartConfig = {
+    backgroundColor: "#e26a00",
+      backgroundGradientFrom: "#fb8c00",
+      backgroundGradientTo: "#ffa726",
+      decimalPlaces: 2, // optional, defaults to 2dp
+      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      style: {
+        borderRadius: 16
+      },
+      propsForDots: {
+        r: "6",
+        strokeWidth: "2",
+        stroke: "#ffa726"
+      }
+  };
+
+const CurrencyScreen = ({ navigation }) => {  
+    const [data, setData] = useState({
+        labels: ["January", "February", "March", "April", "May", "June"],
+        datasets: [
+          {
+            data: [
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100,
+              Math.random() * 100
+            ]
+          }
+        ]
+      });
+    useEffect(() =>  {
+        setData(prepareData(customData));
+    }, [])
+
+    // useEffect(() => {
+    //     console.log("xd - 1")
+    //     if( customData // 👈 null and undefined check
+    //         && Object.keys(customData).length === 0
+    //         && Object.getPrototypeOf(customData) === Object.prototype ){}
+    //     else {
+    //         setData(prepareData(customData));
+    //         console.log("xd - 2")
+    //     }
+
+    //     if( data // 👈 null and undefined check
+    //         && Object.keys(data).length === 0
+    //         && Object.getPrototypeOf(data) === Object.prototype ){}
+    //     else {
+    //         setIsLoaded(true);
+    //         console.log(data)
+    //         console.log("xd - 3");
+    //     }
+
+    // }, [data]);
 
     return (
         <View>
-            
+            <LineChart
+                data={data}
+                width={windowWidth}
+                height={220}
+                chartConfig={chartConfig}
+                />
         </View>
     );
 
@@ -43,5 +134,5 @@ const styles = StyleSheet.create({
 
 });
 
-export default HomeScreen;
+export default CurrencyScreen;
 
