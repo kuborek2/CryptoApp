@@ -77,6 +77,8 @@ const chartConfig = {
   };
 
 const CurrencyScreen = ({ navigation }) => { 
+    const [change, setChange] = useState('00.00'+"%")
+    const [valueStyle, setValueStyle] = useState(styles.textBlack)
     const [data, setData] = useState({
         labels: ["January", "February", "March", "April", "May", "June"],
         datasets: [
@@ -92,6 +94,7 @@ const CurrencyScreen = ({ navigation }) => {
           }
         ]
       });
+
     useEffect(() =>  {
         setData(prepareData(customData));
     }, [])
@@ -103,14 +106,41 @@ const CurrencyScreen = ({ navigation }) => {
         return data.datasets[0].data[dataPointIndex-1] > data.datasets[0].data[dataPointIndex] ? '#ee6b76' : '#36a873';
     }
 
+    const customDataPointClick = ({value, dataset, getColor}) => {
+        let index = dataset.data.indexOf(value);
+        if( index == 0 ){
+            setChange('00.00'+"%")
+            setValueStyle(styles.textBlack)
+            return;
+        }
+        let change = ((dataset.data[index]/dataset.data[index-1])-1).toPrecision(2);
+        if( change == 0 )
+            setValueStyle(styles.textBlack)
+        else if ( change > 0 )
+            setValueStyle(styles.textGreen)
+        else
+            setValueStyle(styles.textRed)
+        setChange(change+"%");
+    }
+
     return (
-        <View>
+        <View styles={styles.mainContainer}>
+            <View style={styles.headerContainer}>
+                <Text style={[styles.headerBox, styles.leftHeaderText,]}>
+                    BTC
+                </Text>
+                <Text style={[styles.headerBox, styles.rightHeaderText, valueStyle]}>
+                    {change}
+                </Text>
+            </View>
+
             <LineChart
                 data={data}
                 width={windowWidth}
                 height={220}
                 chartConfig={chartConfig}
                 getDotColor={customDotColors}
+                onDataPointClick={customDataPointClick}
                 bezier
                 />
         </View>
@@ -120,13 +150,40 @@ const CurrencyScreen = ({ navigation }) => {
 
 
 const styles = StyleSheet.create({
-    container: {
+    mainContainer: {
         display: 'flex',
         flexDirection: 'column',
-        flex: 1,
+    },
+    headerContainer: {
+        width: '100%',
+        height: 40,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         marginTop: StatusBar.currentHeight || 0,
         marginBottom: StatusBar.currentHeight || 0,
-      },
+        },
+    headerBox: {
+        width: '40%',
+        height: 40,
+        margin: 10,
+        fontSize: 30,
+        },
+    leftHeaderText: {
+        textAlign: 'left',
+        },
+    rightHeaderText: {
+        textAlign: 'right',
+        },
+    textBlack: {
+        color: '#364954',
+        },
+    textRed: {
+        color: '#ee6b76',
+        },
+    textGreen: {
+        color: '#36a873',
+        },
 
 });
 
