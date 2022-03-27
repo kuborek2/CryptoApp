@@ -27,12 +27,11 @@ const SettingsScreen = ({ navigation }) => {
     
     return (
         <View style={styles.container}>
-            <View style={styles.splitSettings}>
-                <Text style={styles.termsText}>Settings</Text>
-                
-                <Button title='Go to Terms' onPress={() => navigation.navigate('TOS', { screen: 'TermsOfUsage' })}/>
+            <Text style={styles.termsText}>Settings</Text>
+            <View>
+            <Text>Go to ToS</Text>
+            <Button title='Go to Terms' onPress={() => navigation.navigate('TOS', { screen: 'TermsOfUsage' })}/>
             </View>
-    
         </View>
     );
 
@@ -41,9 +40,11 @@ const SettingsScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container:{
+        minHeight:'100%',
         display:'flex',
         justifyContent:'center',
         alignItems:'center',
+        flex:1,
         
     },
     termsText:{
