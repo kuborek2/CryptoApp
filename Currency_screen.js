@@ -27,6 +27,8 @@ const customData = require('./btcVsusd.json');
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
+const pointsOnChart = 20;
+
 
 
     // <View style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}>
@@ -37,24 +39,30 @@ const prepareData = (dataToPrepare) => {
         Moment(dataToPrepare[dataToPrepare.length-1].time_period_end).format('MMMM Do YYYY')
     ];
 
+    let spaceing = parseInt((dataToPrepare.length)/(pointsOnChart-1));
+    console.log("this is spcaeing: "+spaceing);
+
+    let dataset = dataToPrepare.filter((elem, index, array) => (index)%spaceing == 0);
+    dataset = dataset.map((item, index, array) => {
+      return (item.rate_high+item.rate_low)/2;
+    });
+
     let data = {
         labels: labels,
         datasets: [
             {
-                data: dataToPrepare.map((item) => {
-                    return (item.rate_high+item.rate_low)/2;
-                })
+                data: dataset
             }
         ]
-    }
+    };
 
     return data;
 }
 
 const chartConfig = {
-    backgroundColor: "#e26a00",
-      backgroundGradientFrom: "#fb8c00",
-      backgroundGradientTo: "#ffa726",
+    backgroundColor: "#51bbe9",
+    //   backgroundGradientFrom: "#fb8c00",
+    //   backgroundGradientTo: "#ffa726",
       decimalPlaces: 2, // optional, defaults to 2dp
       color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
       labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
