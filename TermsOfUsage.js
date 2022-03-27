@@ -10,19 +10,37 @@ import {
     Text,
     useColorScheme,
     View,
+    TouchableOpacity,
 
   } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CheckBox from '@react-native-community/checkbox';
 
 
  
 
 const TermsOfUsage = ({ navigation }) => {
 
+    const [isDisabled, setIsDisabled] = useState(true);
+    const [isSelected, setSelection] = useState(false);
+    
+    
+
+ 
+
     const acceptTerms = async () => {
         AsyncStorage.setItem('acceptThisTerms','false'); 
         navigation.navigate('HomeTabs');      
     }
+    
+    const canBeSubmitted = () => {
+        return isSelected ? setIsDisabled(true) : setIsDisabled(false);
+    };
+
+    const onCheckboxClick = () => {
+        setSelection(!isSelected);
+        return canBeSubmitted();
+    };
     
 
     useEffect(() => {
@@ -38,6 +56,9 @@ const TermsOfUsage = ({ navigation }) => {
           }
           getData();
     },[])
+
+    
+
 
 
     return (
