@@ -17,8 +17,8 @@ const TestScreen = ({ navigation }) => {
 
 
 return (
-<View>
-<Text style={styles.home_text}>Home!</Text>
+<View style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
+<Text style={styles.home_text}>Your Favourites CryptoCurrency</Text>
 </View>
 );
 
@@ -27,6 +27,7 @@ return (
 
 const styles = StyleSheet.create({
 home_text:{
+
     fontSize:35,
 },
 
