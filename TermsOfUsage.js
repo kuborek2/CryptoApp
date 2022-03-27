@@ -27,7 +27,7 @@ const TermsOfUsage = ({ navigation }) => {
  
 
     const acceptTerms = async () => {
-        AsyncStorage.setItem('acceptThisTerms','true'); 
+        AsyncStorage.setItem('acceptThisTerms','false'); 
         navigation.navigate('HomeTabs');      
     }
     
@@ -46,7 +46,7 @@ const TermsOfUsage = ({ navigation }) => {
             try {
               const termsReading = await AsyncStorage.getItem('acceptThisTerms')
               if(termsReading != null) {         
-                navigation.navigate('HomeTabs');   
+                //navigation.navigate('HomeTabs');   
               }
             } catch(e) {
               
@@ -59,34 +59,33 @@ const TermsOfUsage = ({ navigation }) => {
 
 
     return (
-        <View style={styles.container}>
-            <View style={{justifyContent:'center',alignItems:'center',minHeight:'30%', minWidth:100,}}>
+       
+            <View style={{minHeight:'100%',minWidth:'100%',justifyContent:'center',alignItems:'center'}}>
                 <Text style={styles.termsText}>CoinApp Terms and Conditions</Text>
-                <View style={{height:400,display:'flex', justifyContent:'center',alignContent:'center',}}>
-                <Text style={styles.termsBigText}>
-                    This app is free to use and share !{"\n"}
-                </Text>
-                <Text style={styles.termsBigText}>
+                <View style={{display:'flex',height:'60%', justifyContent:'center',alignContent:'center',}}>
+                    <Text style={{textAlign:'center',fontSize:25,}}>
+                        This app is free to use and share !
+                    </Text>
+                    <Text style={{textAlign:'center',fontSize:25,marginTop:10,}}>
                     Enjoy!
-                </Text>
+                    </Text>
                 </View>
-                <View style={{paddingTop:'15%'}}>
-                <View style={{display:'flex',flexDirection:'row',marginTop:'5%',paddingBottom:'5%',}}>
-                    <CheckBox
-                        value={isSelected}
-                        onValueChange={onCheckboxClick }
-                        style={styles.checkbox}
-                        
-                    /> 
-                    <Text style={{marginTop:5}}>I have read and accept Terms and Conditions</Text>
-                </View>
+                <View style={{}}>
+                    <View style={{display:'flex',flexDirection:'row',marginTop:'5%',paddingBottom:'5%',}}>
+                        <CheckBox
+                            value={isSelected}
+                            onValueChange={onCheckboxClick }
+                            style={styles.checkbox}                            
+                        /> 
+                        <Text style={{marginTop:5}}>I have read and accept Terms and Conditions</Text>
+                    </View>
                     <TouchableOpacity style={ isSelected ? styles.acceptButton : styles.disabledButton  } onPress={() => acceptTerms()} disabled={isDisabled}>
                         <Text style={{fontSize:25, color:'white',}}>Accept</Text>
                     </TouchableOpacity>
                 </View>
             </View>
                
-        </View>
+       
     );
 
 }
@@ -96,15 +95,7 @@ const TermsOfUsage = ({ navigation }) => {
 
 const styles = StyleSheet.create({
 
-    container:{
-        maxHeight:'100%',
-        maxWidth:'100%',
-        display:'flex',
-        justifyContent:'center',
-        alignItems:'center',
-        
-        
-    },
+  
     termsText:{
         fontSize:30,
         textAlign:'center',
@@ -114,15 +105,7 @@ const styles = StyleSheet.create({
         
 
     },
-    termsBigText:{
-        marginTop:'10%',
-        fontSize:20,
-        justifyContent:'center',
-        alignItems:'center',
-        textAlign:'center',
-        
-        padding:6,
-    },
+    
     acceptButton:{
        
         height:65,
