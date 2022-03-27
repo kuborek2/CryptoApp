@@ -12,10 +12,6 @@ import {
     View,
 
   } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import TermsOfUsage from './TermsOfUsage';
- 
 
 const SettingsScreen = ({ navigation }) => {
 
@@ -28,10 +24,11 @@ const SettingsScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.termsText}>Settings</Text>
-            <View>
-            <Text>Go to ToS</Text>
-            <Button title='Go to Terms' onPress={() => navigation.navigate('TOS', { screen: 'TermsOfUsage' })}/>
+            <View style={{ flex:1, justifyContent:'center',}}>
+            <Text style={styles.settingText}>Go to ToS</Text>
+            <Button style={{paddingTop:5,}} title='Go to Terms' onPress={() => navigation.navigate('TOS', { screen: 'TermsOfUsage' })}/>
             </View>
+            
         </View>
     );
 
@@ -53,10 +50,15 @@ const styles = StyleSheet.create({
         alignItems:'center',
         paddingTop:3,
 
+
     },
     splitSettings:{
         display:'flex',
         justifyContent:'space-between',
+    },
+    settingText:{
+        fontSize:20,
+        textAlign:'center',
     }
 });
 
