@@ -31,7 +31,7 @@ const pointsOnChart = 20;
 
 
 
-    // <View style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}>
+    // <View style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#ee6b76' : '#36a873'}]}>
 
 const prepareData = (dataToPrepare) => {
     let labels = [
@@ -61,22 +61,22 @@ const prepareData = (dataToPrepare) => {
 
 const chartConfig = {
     backgroundColor: "#51bbe9",
-    //   backgroundGradientFrom: "#fb8c00",
-    //   backgroundGradientTo: "#ffa726",
+      backgroundGradientFrom: "#51bbe9",
+      backgroundGradientTo: "#51bbe9",
       decimalPlaces: 2, // optional, defaults to 2dp
       color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgb(54, 73, 84, ${opacity})`,
       style: {
         borderRadius: 16
       },
       propsForDots: {
-        r: "6",
-        strokeWidth: "2",
+        r: "5",
+        strokeWidth: "0",
         stroke: "#ffa726"
       }
   };
 
-const CurrencyScreen = ({ navigation }) => {  
+const CurrencyScreen = ({ navigation }) => { 
     const [data, setData] = useState({
         labels: ["January", "February", "March", "April", "May", "June"],
         datasets: [
@@ -96,26 +96,12 @@ const CurrencyScreen = ({ navigation }) => {
         setData(prepareData(customData));
     }, [])
 
-    // useEffect(() => {
-    //     console.log("xd - 1")
-    //     if( customData // 👈 null and undefined check
-    //         && Object.keys(customData).length === 0
-    //         && Object.getPrototypeOf(customData) === Object.prototype ){}
-    //     else {
-    //         setData(prepareData(customData));
-    //         console.log("xd - 2")
-    //     }
-
-    //     if( data // 👈 null and undefined check
-    //         && Object.keys(data).length === 0
-    //         && Object.getPrototypeOf(data) === Object.prototype ){}
-    //     else {
-    //         setIsLoaded(true);
-    //         console.log(data)
-    //         console.log("xd - 3");
-    //     }
-
-    // }, [data]);
+    const customDotColors = (dataPoint, dataPointIndex) => {
+        if(dataPointIndex == 0)
+            return '#36a873';
+        
+        return data.datasets[0].data[dataPointIndex-1] > data.datasets[0].data[dataPointIndex] ? '#ee6b76' : '#36a873';
+    }
 
     return (
         <View>
@@ -124,6 +110,8 @@ const CurrencyScreen = ({ navigation }) => {
                 width={windowWidth}
                 height={220}
                 chartConfig={chartConfig}
+                getDotColor={customDotColors}
+                bezier
                 />
         </View>
     );
