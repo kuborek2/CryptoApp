@@ -34,14 +34,11 @@ import {
 import TermsOfUsage from './TermsOfUsage';
 import TestScreen from './TestScreen';
 import HomeScreen from './HomeScreen';
-<<<<<<< HEAD
 import CurrencyScreen from './Currency_screen';
 
 console.disableYellowBox = true;
 
-=======
 import SettingsScreen from './SettingsScreen';
->>>>>>> origin/main
 
 
   const Tab = createBottomTabNavigator();
@@ -62,10 +59,7 @@ import SettingsScreen from './SettingsScreen';
         />
         
          
-<<<<<<< HEAD
         <Tab.Screen name="Graph" component={CurrencyScreen} />
-        <Tab.Screen name="Home" component={HomeScreen} />
-=======
         
         <Tab.Screen name="Home" component={HomeScreen} 
           options={{
@@ -80,7 +74,6 @@ import SettingsScreen from './SettingsScreen';
         }}
         
         />
->>>>>>> origin/main
       </Tab.Navigator>
     );
   }
