@@ -10,19 +10,37 @@ import {
     Text,
     useColorScheme,
     View,
+    TouchableOpacity,
 
   } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CheckBox from '@react-native-community/checkbox';
 
 
  
 
 const TermsOfUsage = ({ navigation }) => {
 
+    const [isDisabled, setIsDisabled] = useState(true);
+    const [isSelected, setSelection] = useState(false);
+    
+    
+
+ 
+
     const acceptTerms = async () => {
-        AsyncStorage.setItem('acceptThisTerms','true'); 
+        AsyncStorage.setItem('acceptThisTerms','false'); 
         navigation.navigate('HomeTabs');      
     }
+    
+    const canBeSubmitted = () => {
+        return isSelected ? setIsDisabled(true) : setIsDisabled(false);
+    };
+
+    const onCheckboxClick = () => {
+        setSelection(!isSelected);
+        return canBeSubmitted();
+    };
     
 
     useEffect(() => {
@@ -30,7 +48,7 @@ const TermsOfUsage = ({ navigation }) => {
             try {
               const termsReading = await AsyncStorage.getItem('acceptThisTerms')
               if(termsReading != null) {         
-                navigation.navigate('HomeTabs');   
+                //navigation.navigate('HomeTabs');   
               }
             } catch(e) {
               
@@ -39,35 +57,50 @@ const TermsOfUsage = ({ navigation }) => {
           getData();
     },[])
 
+    
+
+
 
     return (
-        <View style={styles.container}>
-            <View>
-                <Text style={styles.termsText}>Terms of Usage</Text>
-                <Text style={styles.termsBigText}>
-                Lorep ipmsum Lorep ipmsum
-                Lorep ipmsum Lorep ipmsum
-                Lorep ipmsum Lorep ipmsum
-                Lorep ipmsum Lorep ipmsum
-                Lorep ipmsum Lorep ipmsum
-                Lorep ipmsum Lorep ipmsum
-                <Button title='Zaakceptuj' onPress={() => acceptTerms()}/>
-                </Text>
+
+       
+            <View style={{minHeight:'100%',minWidth:'100%',justifyContent:'center',alignItems:'center'}}>
+                <Text style={styles.termsText}>CoinApp Terms and Conditions</Text>
+                <View style={{display:'flex',height:'60%', justifyContent:'center',alignContent:'center',}}>
+                    <Text style={{textAlign:'center',fontSize:25,}}>
+                        This app is free to use and share !
+                    </Text>
+                    <Text style={{textAlign:'center',fontSize:25,marginTop:10,}}>
+                    Enjoy!
+                    </Text>
+                </View>
+                <View style={{}}>
+                    <View style={{display:'flex',flexDirection:'row',marginTop:'5%',paddingBottom:'5%',}}>
+                        <CheckBox
+                            value={isSelected}
+                            onValueChange={onCheckboxClick }
+                            style={styles.checkbox}                            
+                        /> 
+                        <Text style={{marginTop:5}}>I have read and accept Terms and Conditions</Text>
+                    </View>
+                    <TouchableOpacity style={ isSelected ? styles.acceptButton : styles.disabledButton  } onPress={() => acceptTerms()} disabled={isDisabled}>
+                        <Text style={{fontSize:25, color:'white',}}>Accept</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-    
-        </View>
+               
+       
+
     );
 
 }
 
 
 const styles = StyleSheet.create({
-    container:{
-        display:'flex',
-        justifyContent:'center',
-        alignItems:'center',
-        
-    },
+
+
+  
+
     termsText:{
         fontSize:30,
         textAlign:'center',
@@ -75,11 +108,46 @@ const styles = StyleSheet.create({
         paddingTop:3,
 
     },
-    termsBigText:{
-        fontSize:25,
+
+    
+    acceptButton:{
+       
+        height:65,
+        width:350,
+        
         justifyContent:'center',
         alignItems:'center',
-    }
+        
+        backgroundColor:'#51bbe9',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.32,
+        shadowRadius: 5.46,
+
+        elevation: 9,
+    },
+    disabledButton:{
+        height:65,
+        width:350,
+        backgroundColor:'#364954',
+        justifyContent:'center',
+        alignItems:'center',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.32,
+        shadowRadius: 5.46,
+
+        elevation: 9,
+        
+    },
+
+
 });
 
 export default TermsOfUsage;

@@ -11,7 +11,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/AntDesign';
 import {
   Button,
   SafeAreaView,
@@ -34,10 +34,14 @@ import {
 import TermsOfUsage from './TermsOfUsage';
 import TestScreen from './TestScreen';
 import HomeScreen from './HomeScreen';
+<<<<<<< HEAD
 import CurrencyScreen from './Currency_screen';
 
 console.disableYellowBox = true;
 
+=======
+import SettingsScreen from './SettingsScreen';
+>>>>>>> origin/main
 
 
   const Tab = createBottomTabNavigator();
@@ -51,15 +55,32 @@ console.disableYellowBox = true;
     return (
       <Tab.Navigator>
 
-        <Tab.Screen name="Test" component={TestScreen} 
+        <Tab.Screen name="Favourites" component={TestScreen} 
            options={{
-            tabBarIcon: ({size}) => (<Icon name="home" color="#364954" size={size} />)
+            tabBarIcon: ({size}) => (<Icon name="staro" color="#364954" size={size} />)
         }}
         />
         
          
+<<<<<<< HEAD
         <Tab.Screen name="Graph" component={CurrencyScreen} />
         <Tab.Screen name="Home" component={HomeScreen} />
+=======
+        
+        <Tab.Screen name="Home" component={HomeScreen} 
+          options={{
+            tabBarIcon: ({size}) => (<Icon name="home" color="#364954" size={size} />)
+        }}
+        
+        />
+
+        <Tab.Screen name="Settings" component={SettingsScreen} 
+          options={{
+            tabBarIcon: ({size}) => (<Icon name="setting" color="#364954" size={size} />)
+        }}
+        
+        />
+>>>>>>> origin/main
       </Tab.Navigator>
     );
   }
