@@ -34,6 +34,10 @@ import {
 import TermsOfUsage from './TermsOfUsage';
 import TestScreen from './TestScreen';
 import HomeScreen from './HomeScreen';
+import CurrencyScreen from './Currency_screen';
+
+console.disableYellowBox = true;
+
 import SettingsScreen from './SettingsScreen';
 
 
@@ -55,6 +59,7 @@ import SettingsScreen from './SettingsScreen';
         />
         
          
+        <Tab.Screen name="Graph" component={CurrencyScreen} />
         
         <Tab.Screen name="Home" component={HomeScreen} 
           options={{
