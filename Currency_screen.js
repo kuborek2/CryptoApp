@@ -25,24 +25,25 @@ import { Children } from 'react/cjs/react.production.min';
 import Moment from 'moment';
 
 const customData = require('./btcVsusd.json');
+const customDataOneYear = require('./btcVSusd1Year.json');
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const pointsOnChart = 20;
 
-
-
     // <View style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#ee6b76' : '#36a873'}]}>
 
 const prepareData = (dataToPrepare) => {
+    if( dataToPrepare.length == 0 )
+        return [];
+
     let labels = [
         Moment(dataToPrepare[0].time_period_start).format('MMMM Do YYYY'),
         Moment(dataToPrepare[dataToPrepare.length-1].time_period_end).format('MMMM Do YYYY')
     ];
 
     let spaceing = parseInt((dataToPrepare.length)/(pointsOnChart-1));
-    console.log("this is spcaeing: "+spaceing);
 
     let dataset = dataToPrepare.filter((elem, index, array) => (index)%spaceing == 0);
     dataset = dataset.map((item, index, array) => {
@@ -83,19 +84,32 @@ const GraphChangeBtn = (props) => {
     return (
         <TouchableOpacity
             style={styles.button}
-            // onPress={onPress}
+            onPress={props.onPress}
         >
             <Text>{props.name}</Text>
         </TouchableOpacity>
     );
 }
 
-
+// Period is just amount of indexes it must return, so if we pass json data which probs every 2 hours
+// for 2 days we need to pass 48 indexes.
+const ModifyData = (data, pierod) => {
+    if( pierod > data.length )
+        pierod = data.length;
+    let modifiedData = [];
+    for ( let i = 0; i <= pierod; i++ ){
+        modifiedData.push(data[i]);
+    }
+    console.log(data[0])
+    console.log(data[pierod-1])
+    return modifiedData;
+}
 
 const CurrencyScreen = ({ navigation, mainCurrency }) => { 
     const [change, setChange] = useState('00.00'+"%")
     const [value, setValue] = useState('00.00'+mainCurrency)
     const [valueStyle, setValueStyle] = useState(styles.textBlack)
+    const [dataToPrepare, setDataToPrepare] = useState(customData);
     const [data, setData] = useState({
         labels: ["January", "February", "March", "April", "May", "June"],
         datasets: [
@@ -113,7 +127,7 @@ const CurrencyScreen = ({ navigation, mainCurrency }) => {
       });
 
     useEffect(() =>  {
-        setData(prepareData(customData));
+        setData(prepareData(dataToPrepare));
     }, [])
 
     const customDotColors = (dataPoint, dataPointIndex) => {
@@ -171,10 +185,10 @@ const CurrencyScreen = ({ navigation, mainCurrency }) => {
             <View style={styles.separator}/>
 
             <View style={styles.buttonsContainer}>
-                <GraphChangeBtn name={"1D"}/>
-                <GraphChangeBtn name={"1W"}/>
-                <GraphChangeBtn name={"1M"}/>
-                <GraphChangeBtn name={"1Y"}/>
+                <GraphChangeBtn name={"1D"} onPress={() => setData(prepareData(ModifyData(customData, 12)))} />
+                <GraphChangeBtn name={"1W"} onPress={() => setData(prepareData(ModifyData(customData, 12)))} />
+                <GraphChangeBtn name={"1M"} onPress={() => setData(prepareData(ModifyData(customDataOneYear, 30)))} />
+                <GraphChangeBtn name={"1Y"} onPress={() => setData(prepareData(ModifyData(customDataOneYear, 365)))} />
             </View>
 
             <View style={styles.separator}/>
