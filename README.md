@@ -29,12 +29,12 @@ Crypto Drops: <br/>
 Highly Needed shit for the future progress of the project: </br>
 ![image](https://user-images.githubusercontent.com/73942404/158675749-b77c00ab-2e6f-4854-8e0c-87549f104012.png)
 
-// Do poprawnego wyświetlania danych potrzebujemy conajmniej 40 punktów czyli.
-// 100 points is the limit in coin api
-// 1 Day -> 20MIN to coinapi
-// 1 Week -> 2HRS to coinapi
-// 1 Month -> 12HRS to coinapi
-// 1 Year - > 5DAY to coin api
+Do poprawnego wyświetlania danych potrzebujemy conajmniej 40 punktów czyli.<br/>
+100 points is the limit in coin api<br/>
+1 Day -> 20MIN to coinapi<br/>
+1 Week -> 2HRS to coinapi<br/>
+1 Month -> 12HRS to coinapi<br/>
+1 Year - > 5DAY to coin api<br/>
 
 
 
