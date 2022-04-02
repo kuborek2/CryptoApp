@@ -9,7 +9,9 @@ import {
     View,
     Image,
     FlatList,
-    Dimensions ,
+    Dimensions,
+    TouchableOpacity,
+    TouchableHighlight,
   } from 'react-native';
 import {
     LineChart,
@@ -17,7 +19,7 @@ import {
     PieChart,
     ProgressChart,
     ContributionGraph,
-    StackedBarChart
+    StackedBarChart,
     } from "react-native-chart-kit";
 import { Children } from 'react/cjs/react.production.min';
 import Moment from 'moment';
@@ -57,29 +59,42 @@ const prepareData = (dataToPrepare) => {
     };
 
     return data;
-}
+    }
 
 const chartConfig = {
-    backgroundColor: "#51bbe9",
-      backgroundGradientFrom: "#51bbe9",
-      backgroundGradientTo: "#51bbe9",
-      decimalPlaces: 2, // optional, defaults to 2dp
-      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-      labelColor: (opacity = 1) => `rgb(54, 73, 84, ${opacity})`,
-      style: {
-        borderRadius: 16
-      },
-      propsForDots: {
-        r: "5",
-        strokeWidth: "0",
-        stroke: "#ffa726"
-      }
+    backgroundColor: "#364954",
+    backgroundGradientFrom: "#364954",
+    backgroundGradientTo: "#364954",
+    decimalPlaces: 2, // optional, defaults to 2dp
+//   color: (opacity = 1) => `	rgb(0,0,0, ${opacity})`,
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    labelColor: (opacity = 1) => `rgb(255,255,255, ${opacity})`,
+    style: {
+    borderRadius: 16
+    },
+    propsForDots: {
+    r: "5",
+    strokeWidth: "0",
+    stroke: "#ffa726"
+    }
   };
 
+const GraphChangeBtn = (props) => {
+    return (
+        <TouchableOpacity
+            style={styles.button}
+            // onPress={onPress}
+        >
+            <Text>{props.name}</Text>
+        </TouchableOpacity>
+    );
+}
+
+
+
 const CurrencyScreen = ({ navigation, mainCurrency }) => { 
-    console.log(mainCurrency);
-    const [change, setChange] = useState('00.00')
-    const [value, setValue] = useState('00.00'+"%")
+    const [change, setChange] = useState('00.00'+"%")
+    const [value, setValue] = useState('00.00'+mainCurrency)
     const [valueStyle, setValueStyle] = useState(styles.textBlack)
     const [data, setData] = useState({
         labels: ["January", "February", "March", "April", "May", "June"],
@@ -112,6 +127,7 @@ const CurrencyScreen = ({ navigation, mainCurrency }) => {
         let index = dataset.data.indexOf(value);
         if( index == 0 ){
             setChange('00.00'+"%")
+            setValue(value.toFixed(2)+mainCurrency)
             setValueStyle(styles.textBlack)
             return;
         }
@@ -123,18 +139,24 @@ const CurrencyScreen = ({ navigation, mainCurrency }) => {
         else
             setValueStyle(styles.textRed)
         setChange(change+"%");
+        setValue(value.toFixed(2)+mainCurrency)
     }
 
     return (
         <View style={styles.headerContainer}>
             <Text style={[styles.headerBox, styles.headerBox, styles.leftHeaderText,]}>
-                BTC 
+                BTC {value}
             </Text>
+
+            <View style={styles.separator}/>
+
             <Text style={[styles.headerBox, styles.rightHeaderText, valueStyle]}>
                 {change}
             </Text>
 
-            <View>
+            <View style={styles.separator}/>
+
+            <View style={{margin: 10}}>
                 <LineChart
                     data={data}
                     width={windowWidth}
@@ -145,6 +167,18 @@ const CurrencyScreen = ({ navigation, mainCurrency }) => {
                     bezier
                     />
             </View>
+
+            <View style={styles.separator}/>
+
+            <View style={styles.buttonsContainer}>
+                <GraphChangeBtn name={"1D"}/>
+                <GraphChangeBtn name={"1W"}/>
+                <GraphChangeBtn name={"1M"}/>
+                <GraphChangeBtn name={"1Y"}/>
+            </View>
+
+            <View style={styles.separator}/>
+
         </View>
     );
 
@@ -156,17 +190,50 @@ const styles = StyleSheet.create({
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
-        // justifyContent: 'space-between',
         paddingTop: StatusBar.currentHeight || 0,
         paddingBottom: StatusBar.currentHeight || 0,
-        backgroundColor: '#51bbe9',
+        // backgroundColor: '#51bbe9',
+        // backgroundColor: '#99aebb',
+        backgroundColor: '#364954',
         height: '100%',
         },
     headerBox: {
         height: 40,
         margin: 10,
         fontSize: 30,
+        color: '#FFFFFF'
         },
+    separator: {
+        alignSelf: 'center',
+        height: 0,
+        width: '85%',
+        borderWidth: 1.5,
+    },
+    buttonsContainer: {
+        margin: 20,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    button: {
+        color: '#FFFFFF',
+        fontSize: 30,
+        backgroundColor: '#51bbe9',
+        height: 40,
+        width: 40,
+        justifyContent:'center',
+        alignItems:'center',
+        borderRadius: 8,
+        
+        backgroundColor:'#51bbe9',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.32,
+        shadowRadius: 5.46,
+    },
     leftHeaderText: {
         textAlign: 'left',
         },
@@ -174,7 +241,7 @@ const styles = StyleSheet.create({
         textAlign: 'right',
         },
     textBlack: {
-        color: '#364954',
+        color: '#FFFFFF',
         },
     textRed: {
         color: '#ee6b76',
