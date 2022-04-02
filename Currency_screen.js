@@ -30,6 +30,22 @@ const customDataOneYear = require('./btcVSusd1Year.json');
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
+const exampleData = {
+    labels: ["January", "February", "March", "April", "May", "June"],
+    datasets: [
+      {
+        data: [
+          Math.random() * 100,
+          Math.random() * 100,
+          Math.random() * 100,
+          Math.random() * 100,
+          Math.random() * 100,
+          Math.random() * 100
+        ]
+      }
+    ]
+  };
+
 const pointsOnChart = 20;
 
     // <View style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#ee6b76' : '#36a873'}]}>
@@ -94,40 +110,49 @@ const GraphChangeBtn = (props) => {
 // Period is just amount of indexes it must return, so if we pass json data which probs every 2 hours
 // for 2 days we need to pass 48 indexes.
 const ModifyData = (data, pierod) => {
-    if( pierod > data.length )
+    if( pierod > data.length ){
+        console.log("pierod: ",pierod," vs data.length: ",data.length);
         pierod = data.length;
+    }
+    console.log("pierod: ",pierod)
     let modifiedData = [];
-    for ( let i = 0; i <= pierod; i++ ){
+    for ( let i = 0; i < pierod; i++ ){
         modifiedData.push(data[i]);
     }
-    console.log(data[0])
-    console.log(data[pierod-1])
     return modifiedData;
 }
+
+const dataLengthChecker = (data) => {
+    console.log(data);
+    if( data.datasets !== undefined ){
+        if( data.datasets[0] !== undefined ){
+            if( data.datasets[0].data !== undefined ){
+                console.log(data.datasets[0].data.length);
+                return data.datasets[0].data.length;
+            }
+        }
+    }
+    return 0;
+}
+
+// Do poprawnego wyświetlania danych potrzebujemy conajmniej 40 punktów czyli.
+// 100 points is the limit in coin api
+// 1 Day -> 20MIN to coinapi
+// 1 Week -> 2HRS to coinapi
+// 1 Month -> 12HRS to coinapi
+// 1 Year - > 5DAY to coin api
 
 const CurrencyScreen = ({ navigation, mainCurrency }) => { 
     const [change, setChange] = useState('00.00'+"%")
     const [value, setValue] = useState('00.00'+mainCurrency)
     const [valueStyle, setValueStyle] = useState(styles.textBlack)
-    const [dataToPrepare, setDataToPrepare] = useState(customData);
-    const [data, setData] = useState({
-        labels: ["January", "February", "March", "April", "May", "June"],
-        datasets: [
-          {
-            data: [
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100
-            ]
-          }
-        ]
-      });
+    // const [dataToPrepare, setDataToPrepare] = useState(customData);
+    const [data, setData] = useState(exampleData);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() =>  {
-        setData(prepareData(dataToPrepare));
+        let preparedData = prepareData(customData);
+        setData(preparedData);
     }, [])
 
     const customDotColors = (dataPoint, dataPointIndex) => {
@@ -156,46 +181,63 @@ const CurrencyScreen = ({ navigation, mainCurrency }) => {
         setValue(value.toFixed(2)+mainCurrency)
     }
 
+    const reloadData = (data, pierod) => {
+        setIsLoading(true);
+        let modifiedData = ModifyData(data, pierod);
+        let preparedData = prepareData(modifiedData);
+        setData(preparedData);
+        setIsLoading(false);
+    }
+
     return (
-        <View style={styles.headerContainer}>
-            <Text style={[styles.headerBox, styles.headerBox, styles.leftHeaderText,]}>
-                BTC {value}
-            </Text>
+        !isLoading ? (
+            <View style={styles.headerContainer}>
+                <Text style={[styles.headerBox, styles.headerBox, styles.leftHeaderText,]}>
+                    BTC {value}
+                </Text>
 
-            <View style={styles.separator}/>
+                <View style={styles.separator}/>
 
-            <Text style={[styles.headerBox, styles.rightHeaderText, valueStyle]}>
-                {change}
-            </Text>
+                <Text style={[styles.headerBox, styles.rightHeaderText, valueStyle]}>
+                    {change}
+                </Text>
 
-            <View style={styles.separator}/>
+                <View style={styles.separator}/>
 
-            <View style={{margin: 10}}>
-                <LineChart
-                    data={data}
-                    width={windowWidth}
-                    height={220}
-                    chartConfig={chartConfig}
-                    getDotColor={customDotColors}
-                    onDataPointClick={customDataPointClick}
-                    bezier
-                    />
+                <View style={{margin: 10}}>
+                    <LineChart
+                        data={dataLengthChecker(data) > 0 ? data : exampleData}
+                        width={windowWidth-30}
+                        height={220}
+                        chartConfig={chartConfig}
+                        getDotColor={customDotColors}
+                        onDataPointClick={customDataPointClick}
+                        bezier
+                        />
+                </View>
+
+                <View style={styles.separator}/>
+
+                <View style={styles.buttonsContainer}>
+                    <GraphChangeBtn name={"1D"} onPress={() => reloadData(customData, 40)} /> 
+                    <GraphChangeBtn name={"1W"} onPress={() => reloadData(customData, 80)} />
+                    <GraphChangeBtn name={"1M"} onPress={() => reloadData(customDataOneYear, 30)} />
+                    <GraphChangeBtn name={"1Y"} onPress={() => reloadData(customDataOneYear, 365)} />
+                </View>
+
+                <View style={styles.separator}/>
+
             </View>
-
-            <View style={styles.separator}/>
-
-            <View style={styles.buttonsContainer}>
-                <GraphChangeBtn name={"1D"} onPress={() => setData(prepareData(ModifyData(customData, 12)))} />
-                <GraphChangeBtn name={"1W"} onPress={() => setData(prepareData(ModifyData(customData, 12)))} />
-                <GraphChangeBtn name={"1M"} onPress={() => setData(prepareData(ModifyData(customDataOneYear, 30)))} />
-                <GraphChangeBtn name={"1Y"} onPress={() => setData(prepareData(ModifyData(customDataOneYear, 365)))} />
+        ) : (
+            <View 
+                style={{        
+                    justifyContent:'center',
+                    alignItems:'center',}}
+                >
+                <Text>Data is loading</Text>
             </View>
-
-            <View style={styles.separator}/>
-
-        </View>
+        )
     );
-
 }
 
 
