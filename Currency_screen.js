@@ -12,6 +12,7 @@ import {
     Dimensions,
     TouchableOpacity,
     TouchableHighlight,
+    Button
   } from 'react-native';
 import {
     LineChart,
@@ -23,6 +24,7 @@ import {
     } from "react-native-chart-kit";
 import { Children } from 'react/cjs/react.production.min';
 import Moment from 'moment';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const customData = require('./btcVsusd.json');
 const customDataOneYear = require('./btcVSusd1Year.json');
@@ -123,11 +125,9 @@ const ModifyData = (data, pierod) => {
 }
 
 const dataLengthChecker = (data) => {
-    console.log(data);
     if( data.datasets !== undefined ){
         if( data.datasets[0] !== undefined ){
             if( data.datasets[0].data !== undefined ){
-                console.log(data.datasets[0].data.length);
                 return data.datasets[0].data.length;
             }
         }
@@ -146,14 +146,84 @@ const CurrencyScreen = ({ navigation, mainCurrency }) => {
     const [change, setChange] = useState('00.00'+"%")
     const [value, setValue] = useState('00.00'+mainCurrency)
     const [valueStyle, setValueStyle] = useState(styles.textBlack)
-    // const [dataToPrepare, setDataToPrepare] = useState(customData);
     const [data, setData] = useState(exampleData);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [currentCurrency, setCurrentCurrency] = useState("BTC")
+    const [isFavorite, setIsFavorite] = useState(false);
 
     useEffect(() =>  {
         let preparedData = prepareData(customData);
         setData(preparedData);
     }, [])
+
+    // Async storage secotion #################################################
+
+    const saveAsyncStroageData = async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // Load data
+                let favoritesArray = await AsyncStorage.getItem('FAVORITE_CURRENCIES');
+                favoritesArray = JSON.parse(favoritesArray);
+                console.log("favoritesArray in save: ",favoritesArray);
+
+                //Check if empty -> if yes make empty table
+                if( favoritesArray === undefined || favoritesArray === null ){
+                    favoritesArray = [];
+                    favoritesArray.push(currentCurrency)
+                    setIsFavorite(true);
+                } else {
+                    if( !isFavorite ){
+                        favoritesArray.push(currentCurrency)
+                        setIsFavorite(true);
+                    } else {
+                        favoritesArray.pop(currentCurrency)
+                        setIsFavorite(false);
+                    }
+                }
+                favoritesArray = JSON.stringify(favoritesArray);
+                AsyncStorage.setItem('FAVORITE_CURRENCIES',favoritesArray);
+                console.log(isFavorite)
+                resolve();
+            } catch(e) {
+                console.log("Something went wrong near aynsc favorites data change");
+                reject(e);
+            }
+        })
+      }
+
+    const getAsyncStorageData = async () => {
+        return new Promise( async (resolve, reject) => {
+            try {
+                //Load data
+                let favoritesArray = await AsyncStorage.getItem('FAVORITE_CURRENCIES');
+                favoritesArray = JSON.parse(favoritesArray);
+                console.log("favoritesArray in get: ",typeof(favoritesArray));
+                console.log("favoritesArray in get: ",favoritesArray);
+
+                //Check if empty -> if yes make empty table
+                if( favoritesArray === undefined || favoritesArray === null )
+                    favoritesArray = new Array();
+
+                // set Hook for button text
+                if( favoritesArray.includes(currentCurrency) )
+                    setIsFavorite(true);
+                else 
+                    setIsFavorite(false);
+                // Resolves promise after chaneing data    
+                resolve();
+            } catch(e) {
+                console.log("Something went wrong near aynsc favorites first data load");
+                reject(e);
+            }
+        })
+    }
+
+    useEffect(() => {
+        getAsyncStorageData();
+    }, [])
+
+    // ACustom graph items section #################################################
 
     const customDotColors = (dataPoint, dataPointIndex) => {
         if(dataPointIndex == 0)
@@ -180,6 +250,8 @@ const CurrencyScreen = ({ navigation, mainCurrency }) => {
         setChange(change+"%");
         setValue(value.toFixed(2)+mainCurrency)
     }
+
+    // Change data on graph #################################################
 
     const reloadData = (data, pierod) => {
         setIsLoading(true);
@@ -227,6 +299,21 @@ const CurrencyScreen = ({ navigation, mainCurrency }) => {
 
                 <View style={styles.separator}/>
 
+                <Button
+                    onPress={() => saveAsyncStroageData()}
+                    title={!isFavorite ? "Add to favorites" : "Remove from favorites"}
+                    color="#51bbe9"
+                    />
+
+                <View style={styles.separator}/>
+
+                {/* <TouchableOpacity
+                    styles={[styles.button, {width: '45%'}]}
+                    onPress={() => {console.log("xd")}}
+                >
+                    <Text>{isFavorite}</Text>
+                </TouchableOpacity> */}
+
             </View>
         ) : (
             <View 
@@ -234,7 +321,7 @@ const CurrencyScreen = ({ navigation, mainCurrency }) => {
                     justifyContent:'center',
                     alignItems:'center',}}
                 >
-                <Text>Data is loading</Text>
+                <Text>{isFavorite}</Text>
             </View>
         )
     );

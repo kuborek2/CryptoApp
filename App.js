@@ -21,6 +21,7 @@ import {
   Text,
   useColorScheme,
   View,
+  LogBox,
 } from 'react-native';
 
 import {
@@ -36,7 +37,7 @@ import TestScreen from './TestScreen';
 import HomeScreen from './HomeScreen';
 import CurrencyScreen from './Currency_screen';
 
-console.disableYellowBox = true;
+LogBox.ignoreAllLogs();
 
 import SettingsScreen from './SettingsScreen';
 
