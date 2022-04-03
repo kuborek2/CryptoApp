@@ -9,9 +9,11 @@ import {
     View,
     Image,
     FlatList,
+    TouchableOpacity,
   } from 'react-native';
 import { Children } from 'react/cjs/react.production.min';
 
+const coinApiKey = "0241F9BA-25FA-4312-A838-A7913E667D2A";
 
 let ExampleCoinData = [
     {
@@ -104,8 +106,13 @@ let checkIndexIsEven = (n) => {
     return n % 2 == 0;
 }
 
-const Item = ({ item }) => (
-    <View style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}>
+const Item = ({ item }, navigation ) => (
+    <TouchableOpacity 
+        style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}
+        onPress={() => navigation.navigate('Graph', {
+            currencyName: item.asset_id,
+          })}
+        >
         <Image
             style={styles.currencyIcon}
             source={{uri: ExampleCoinIconData.find(subItem => subItem.asset_id === item.asset_id) == null 
@@ -117,7 +124,7 @@ const Item = ({ item }) => (
         <Text style={styles.counter}>€ {ExampleCoinExchangeRatesEuro.find(subItem => subItem.asset_id_quote === item.asset_id) == null 
                 ? '00.00' :
                 ExampleCoinExchangeRatesEuro.find(subItem => subItem.asset_id_quote === item.asset_id).rate}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
 const HomeScreen = ({ navigation }) => {
@@ -127,7 +134,7 @@ const HomeScreen = ({ navigation }) => {
             <View style={styles.container}>
                 <FlatList
                     data={ExampleCoinData}
-                    renderItem={Item}
+                    renderItem={(item) => Item(item, navigation)}
                     keyExtractor={item => item.asset_id}
                 />
             </View>
