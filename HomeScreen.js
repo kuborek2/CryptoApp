@@ -70,7 +70,7 @@ let ExampleCoinData = [
         "price_usd": 0.29642410289863413,
         "data_start": "2013-03-15",
         "data_end": "2022-03-16"
-      }
+      },
 ]
 
 let ExampleCoinIconData = [
@@ -106,11 +106,18 @@ let checkIndexIsEven = (n) => {
     return n % 2 == 0;
 }
 
-const HomeScreen = ({ navigation }) => {
+let currencyApiRequestNameMapper = {"€":"EUR"}
 
+const HomeScreen = ({ navigation, mainCurrency }) => {
+    // Hooks
     const [coinList, setCoinList] = useState(ExampleCoinData);
     const [coinIconList, setCoinIconList] = useState(ExampleCoinIconData);
     const [coinExchangeRateList, setCoinExchangeRateList] = useState(ExampleCoinExchangeRatesEuro);
+    const [currnecyApiRequestName, setCurrnecyApiRequestName] = useState(currencyApiRequestNameMapper[mainCurrency])
+
+    //
+    console.log(currnecyApiRequestName);
+    
 
 
     const Item = ({ item }, navigation ) => (
@@ -128,31 +135,20 @@ const HomeScreen = ({ navigation }) => {
                 }}
             />
             <Text style={styles.title}>{item.name}</Text>
-            <Text style={styles.counter}>€ {coinExchangeRateList.find(subItem => subItem.asset_id_quote === item.asset_id) == null 
+            <Text style={styles.counter}>{mainCurrency} {coinExchangeRateList.find(subItem => subItem.asset_id_quote === item.asset_id) == null 
                     ? '00.00' :
                     coinExchangeRateList.find(subItem => subItem.asset_id_quote === item.asset_id).rate}</Text>
         </TouchableOpacity>
       );
 
     return (
-        <ScrollView>
-            <View style={styles.container}>
-                <FlatList
-                    data={coinList}
-                    renderItem={(item) => Item(item, navigation)}
-                    keyExtractor={item => item.asset_id}
-                />
-            </View>
-        </ScrollView>
-
-        // <SafeAreaView style={styles.container}>
-        // <FlatList
-        // data={DATA}
-        // renderItem={renderItem}
-        // keyExtractor={item => item.id}
-        // />
-        // </SafeAreaView>
-
+        <View style={styles.container}>
+            <FlatList
+                data={coinList}
+                renderItem={(item) => Item(item, navigation)}
+                keyExtractor={item => item.asset_id}
+            />
+        </View>
     );
 
 }
