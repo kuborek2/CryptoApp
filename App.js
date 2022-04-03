@@ -55,7 +55,9 @@ import SettingsScreen from './SettingsScreen';
 
 
       return (
-        <Tab.Navigator>
+        <Tab.Navigator
+          initialRouteName="Home"
+          >
 
           {/* Fav SCREEN SECTION ##################################### */}
           <Tab.Screen name="Favourites" component={TestScreen} 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     SafeAreaView,
     ScrollView,
@@ -106,34 +106,39 @@ let checkIndexIsEven = (n) => {
     return n % 2 == 0;
 }
 
-const Item = ({ item }, navigation ) => (
-    <TouchableOpacity 
-        style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}
-        onPress={() => navigation.navigate('Graph', {
-            currencyName: item.asset_id,
-          })}
-        >
-        <Image
-            style={styles.currencyIcon}
-            source={{uri: ExampleCoinIconData.find(subItem => subItem.asset_id === item.asset_id) == null 
-                ? 'https://cdn-icons-png.flaticon.com/128/5169/5169216.png' :
-                ExampleCoinIconData.find(subItem => subItem.asset_id === item.asset_id).url
-            }}
-        />
-        <Text style={styles.title}>{item.name}</Text>
-        <Text style={styles.counter}>€ {ExampleCoinExchangeRatesEuro.find(subItem => subItem.asset_id_quote === item.asset_id) == null 
-                ? '00.00' :
-                ExampleCoinExchangeRatesEuro.find(subItem => subItem.asset_id_quote === item.asset_id).rate}</Text>
-    </TouchableOpacity>
-  );
-
 const HomeScreen = ({ navigation }) => {
+
+    const [coinList, setCoinList] = useState(ExampleCoinData);
+    const [coinIconList, setCoinIconList] = useState(ExampleCoinIconData);
+    const [coinExchangeRateList, setCoinExchangeRateList] = useState(ExampleCoinExchangeRatesEuro);
+
+
+    const Item = ({ item }, navigation ) => (
+        <TouchableOpacity 
+            style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}
+            onPress={() => navigation.navigate('Graph', {
+                currencyName: item.asset_id,
+              })}
+            >
+            <Image
+                style={styles.currencyIcon}
+                source={{uri: coinIconList.find(subItem => subItem.asset_id === item.asset_id) == null 
+                    ? 'https://cdn-icons-png.flaticon.com/128/5169/5169216.png' :
+                    coinIconList.find(subItem => subItem.asset_id === item.asset_id).url
+                }}
+            />
+            <Text style={styles.title}>{item.name}</Text>
+            <Text style={styles.counter}>€ {coinExchangeRateList.find(subItem => subItem.asset_id_quote === item.asset_id) == null 
+                    ? '00.00' :
+                    coinExchangeRateList.find(subItem => subItem.asset_id_quote === item.asset_id).rate}</Text>
+        </TouchableOpacity>
+      );
 
     return (
         <ScrollView>
             <View style={styles.container}>
                 <FlatList
-                    data={ExampleCoinData}
+                    data={coinList}
                     renderItem={(item) => Item(item, navigation)}
                     keyExtractor={item => item.asset_id}
                 />
