@@ -9,7 +9,10 @@ import {
     View,
     Image,
     FlatList,
-    Dimensions ,
+    Dimensions,
+    TouchableOpacity,
+    TouchableHighlight,
+    Button
   } from 'react-native';
 import {
     LineChart,
@@ -17,30 +20,48 @@ import {
     PieChart,
     ProgressChart,
     ContributionGraph,
-    StackedBarChart
+    StackedBarChart,
     } from "react-native-chart-kit";
 import { Children } from 'react/cjs/react.production.min';
 import Moment from 'moment';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const customData = require('./btcVsusd.json');
+const customDataOneYear = require('./btcVSusd1Year.json');
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
+const exampleData = {
+    labels: ["January", "February", "March", "April", "May", "June"],
+    datasets: [
+      {
+        data: [
+          Math.random() * 100,
+          Math.random() * 100,
+          Math.random() * 100,
+          Math.random() * 100,
+          Math.random() * 100,
+          Math.random() * 100
+        ]
+      }
+    ]
+  };
+
 const pointsOnChart = 20;
-
-
 
     // <View style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#ee6b76' : '#36a873'}]}>
 
 const prepareData = (dataToPrepare) => {
+    if( dataToPrepare.length == 0 )
+        return [];
+
     let labels = [
         Moment(dataToPrepare[0].time_period_start).format('MMMM Do YYYY'),
         Moment(dataToPrepare[dataToPrepare.length-1].time_period_end).format('MMMM Do YYYY')
     ];
 
     let spaceing = parseInt((dataToPrepare.length)/(pointsOnChart-1));
-    console.log("this is spcaeing: "+spaceing);
 
     let dataset = dataToPrepare.filter((elem, index, array) => (index)%spaceing == 0);
     dataset = dataset.map((item, index, array) => {
@@ -57,47 +78,152 @@ const prepareData = (dataToPrepare) => {
     };
 
     return data;
-}
+    }
 
 const chartConfig = {
-    backgroundColor: "#51bbe9",
-      backgroundGradientFrom: "#51bbe9",
-      backgroundGradientTo: "#51bbe9",
-      decimalPlaces: 2, // optional, defaults to 2dp
-      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-      labelColor: (opacity = 1) => `rgb(54, 73, 84, ${opacity})`,
-      style: {
-        borderRadius: 16
-      },
-      propsForDots: {
-        r: "5",
-        strokeWidth: "0",
-        stroke: "#ffa726"
-      }
+    backgroundColor: "#364954",
+    backgroundGradientFrom: "#364954",
+    backgroundGradientTo: "#364954",
+    decimalPlaces: 2, // optional, defaults to 2dp
+//   color: (opacity = 1) => `	rgb(0,0,0, ${opacity})`,
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    labelColor: (opacity = 1) => `rgb(255,255,255, ${opacity})`,
+    style: {
+    borderRadius: 16
+    },
+    propsForDots: {
+    r: "5",
+    strokeWidth: "0",
+    stroke: "#ffa726"
+    }
   };
 
-const CurrencyScreen = ({ navigation }) => { 
+const GraphChangeBtn = (props) => {
+    return (
+        <TouchableOpacity
+            style={styles.button}
+            onPress={props.onPress}
+        >
+            <Text>{props.name}</Text>
+        </TouchableOpacity>
+    );
+}
+
+// Period is just amount of indexes it must return, so if we pass json data which probs every 2 hours
+// for 2 days we need to pass 48 indexes.
+const ModifyData = (data, pierod) => {
+    if( pierod > data.length ){
+        console.log("pierod: ",pierod," vs data.length: ",data.length);
+        pierod = data.length;
+    }
+    console.log("pierod: ",pierod)
+    let modifiedData = [];
+    for ( let i = 0; i < pierod; i++ ){
+        modifiedData.push(data[i]);
+    }
+    return modifiedData;
+}
+
+const dataLengthChecker = (data) => {
+    if( data.datasets !== undefined ){
+        if( data.datasets[0] !== undefined ){
+            if( data.datasets[0].data !== undefined ){
+                return data.datasets[0].data.length;
+            }
+        }
+    }
+    return 0;
+}
+
+// Do poprawnego wyświetlania danych potrzebujemy conajmniej 40 punktów czyli.
+// 100 points is the limit in coin api
+// 1 Day -> 20MIN to coinapi
+// 1 Week -> 2HRS to coinapi
+// 1 Month -> 12HRS to coinapi
+// 1 Year - > 5DAY to coin api
+
+const CurrencyScreen = ({ navigation, mainCurrency }) => { 
     const [change, setChange] = useState('00.00'+"%")
+    const [value, setValue] = useState('00.00'+mainCurrency)
     const [valueStyle, setValueStyle] = useState(styles.textBlack)
-    const [data, setData] = useState({
-        labels: ["January", "February", "March", "April", "May", "June"],
-        datasets: [
-          {
-            data: [
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100,
-              Math.random() * 100
-            ]
-          }
-        ]
-      });
+    const [data, setData] = useState(exampleData);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const [currentCurrency, setCurrentCurrency] = useState("BTC")
+    const [isFavorite, setIsFavorite] = useState(false);
 
     useEffect(() =>  {
-        setData(prepareData(customData));
+        let preparedData = prepareData(customData);
+        setData(preparedData);
     }, [])
+
+    // Async storage secotion #################################################
+
+    const saveAsyncStroageData = async () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // Load data
+                let favoritesArray = await AsyncStorage.getItem('FAVORITE_CURRENCIES');
+                favoritesArray = JSON.parse(favoritesArray);
+                console.log("favoritesArray in save: ",favoritesArray);
+
+                //Check if empty -> if yes make empty table
+                if( favoritesArray === undefined || favoritesArray === null ){
+                    favoritesArray = [];
+                    favoritesArray.push(currentCurrency)
+                    setIsFavorite(true);
+                } else {
+                    if( !isFavorite ){
+                        favoritesArray.push(currentCurrency)
+                        setIsFavorite(true);
+                    } else {
+                        favoritesArray.pop(currentCurrency)
+                        setIsFavorite(false);
+                    }
+                }
+                favoritesArray = JSON.stringify(favoritesArray);
+                AsyncStorage.setItem('FAVORITE_CURRENCIES',favoritesArray);
+                console.log(isFavorite)
+                resolve();
+            } catch(e) {
+                console.log("Something went wrong near aynsc favorites data change");
+                reject(e);
+            }
+        })
+      }
+
+    const getAsyncStorageData = async () => {
+        return new Promise( async (resolve, reject) => {
+            try {
+                //Load data
+                let favoritesArray = await AsyncStorage.getItem('FAVORITE_CURRENCIES');
+                favoritesArray = JSON.parse(favoritesArray);
+                console.log("favoritesArray in get: ",typeof(favoritesArray));
+                console.log("favoritesArray in get: ",favoritesArray);
+
+                //Check if empty -> if yes make empty table
+                if( favoritesArray === undefined || favoritesArray === null )
+                    favoritesArray = new Array();
+
+                // set Hook for button text
+                if( favoritesArray.includes(currentCurrency) )
+                    setIsFavorite(true);
+                else 
+                    setIsFavorite(false);
+                // Resolves promise after chaneing data    
+                resolve();
+            } catch(e) {
+                console.log("Something went wrong near aynsc favorites first data load");
+                reject(e);
+            }
+        })
+    }
+
+    useEffect(() => {
+        getAsyncStorageData();
+    }, [])
+
+    // ACustom graph items section #################################################
 
     const customDotColors = (dataPoint, dataPointIndex) => {
         if(dataPointIndex == 0)
@@ -110,6 +236,7 @@ const CurrencyScreen = ({ navigation }) => {
         let index = dataset.data.indexOf(value);
         if( index == 0 ){
             setChange('00.00'+"%")
+            setValue(value.toFixed(2)+mainCurrency)
             setValueStyle(styles.textBlack)
             return;
         }
@@ -121,54 +248,135 @@ const CurrencyScreen = ({ navigation }) => {
         else
             setValueStyle(styles.textRed)
         setChange(change+"%");
+        setValue(value.toFixed(2)+mainCurrency)
+    }
+
+    // Change data on graph #################################################
+
+    const reloadData = (data, pierod) => {
+        setIsLoading(true);
+        let modifiedData = ModifyData(data, pierod);
+        let preparedData = prepareData(modifiedData);
+        setData(preparedData);
+        setIsLoading(false);
     }
 
     return (
-        <View styles={styles.mainContainer}>
+        !isLoading ? (
             <View style={styles.headerContainer}>
-                <Text style={[styles.headerBox, styles.leftHeaderText,]}>
-                    BTC
+                <Text style={[styles.headerBox, styles.headerBox, styles.leftHeaderText,]}>
+                    BTC {value}
                 </Text>
+
+                <View style={styles.separator}/>
+
                 <Text style={[styles.headerBox, styles.rightHeaderText, valueStyle]}>
                     {change}
                 </Text>
+
+                <View style={styles.separator}/>
+
+                <View style={{margin: 10}}>
+                    <LineChart
+                        data={dataLengthChecker(data) > 0 ? data : exampleData}
+                        width={windowWidth-30}
+                        height={220}
+                        chartConfig={chartConfig}
+                        getDotColor={customDotColors}
+                        onDataPointClick={customDataPointClick}
+                        bezier
+                        />
+                </View>
+
+                <View style={styles.separator}/>
+
+                <View style={styles.buttonsContainer}>
+                    <GraphChangeBtn name={"1D"} onPress={() => reloadData(customData, 40)} /> 
+                    <GraphChangeBtn name={"1W"} onPress={() => reloadData(customData, 80)} />
+                    <GraphChangeBtn name={"1M"} onPress={() => reloadData(customDataOneYear, 30)} />
+                    <GraphChangeBtn name={"1Y"} onPress={() => reloadData(customDataOneYear, 365)} />
+                </View>
+
+                <View style={styles.separator}/>
+
+                <Button
+                    onPress={() => saveAsyncStroageData()}
+                    title={!isFavorite ? "Add to favorites" : "Remove from favorites"}
+                    color="#51bbe9"
+                    />
+
+                <View style={styles.separator}/>
+
+                {/* <TouchableOpacity
+                    styles={[styles.button, {width: '45%'}]}
+                    onPress={() => {console.log("xd")}}
+                >
+                    <Text>{isFavorite}</Text>
+                </TouchableOpacity> */}
+
             </View>
-
-            <LineChart
-                data={data}
-                width={windowWidth}
-                height={220}
-                chartConfig={chartConfig}
-                getDotColor={customDotColors}
-                onDataPointClick={customDataPointClick}
-                bezier
-                />
-        </View>
+        ) : (
+            <View 
+                style={{        
+                    justifyContent:'center',
+                    alignItems:'center',}}
+                >
+                <Text>{isFavorite}</Text>
+            </View>
+        )
     );
-
 }
 
 
 const styles = StyleSheet.create({
-    mainContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
     headerContainer: {
         width: '100%',
-        height: 40,
         display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: StatusBar.currentHeight || 0,
-        marginBottom: StatusBar.currentHeight || 0,
+        flexDirection: 'column',
+        paddingTop: StatusBar.currentHeight || 0,
+        paddingBottom: StatusBar.currentHeight || 0,
+        // backgroundColor: '#51bbe9',
+        // backgroundColor: '#99aebb',
+        backgroundColor: '#364954',
+        height: '100%',
         },
     headerBox: {
-        width: '40%',
         height: 40,
         margin: 10,
         fontSize: 30,
+        color: '#FFFFFF'
         },
+    separator: {
+        alignSelf: 'center',
+        height: 0,
+        width: '85%',
+        borderWidth: 1.5,
+    },
+    buttonsContainer: {
+        margin: 20,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    button: {
+        color: '#FFFFFF',
+        fontSize: 30,
+        backgroundColor: '#51bbe9',
+        height: 40,
+        width: 40,
+        justifyContent:'center',
+        alignItems:'center',
+        borderRadius: 8,
+        
+        backgroundColor:'#51bbe9',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.32,
+        shadowRadius: 5.46,
+    },
     leftHeaderText: {
         textAlign: 'left',
         },
@@ -176,7 +384,7 @@ const styles = StyleSheet.create({
         textAlign: 'right',
         },
     textBlack: {
-        color: '#364954',
+        color: '#FFFFFF',
         },
     textRed: {
         color: '#ee6b76',

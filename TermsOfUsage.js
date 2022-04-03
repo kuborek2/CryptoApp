@@ -48,7 +48,7 @@ const TermsOfUsage = ({ navigation }) => {
             try {
               const termsReading = await AsyncStorage.getItem('acceptThisTerms')
               if(termsReading != null) {         
-                // navigation.navigate('HomeTabs');   
+                navigation.navigate('HomeTabs');   
               }
             } catch(e) {
               

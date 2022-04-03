@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -21,6 +21,7 @@ import {
   Text,
   useColorScheme,
   View,
+  LogBox,
 } from 'react-native';
 
 import {
@@ -36,7 +37,7 @@ import TestScreen from './TestScreen';
 import HomeScreen from './HomeScreen';
 import CurrencyScreen from './Currency_screen';
 
-console.disableYellowBox = true;
+LogBox.ignoreAllLogs();
 
 import SettingsScreen from './SettingsScreen';
 
@@ -48,49 +49,58 @@ import SettingsScreen from './SettingsScreen';
 
   const App = ({ navigation }) =>  {
 
-  function HomeTabs() {
-    return (
-      <Tab.Navigator>
+    const [mainCurrency, setMainCurrency] = useState('€');
 
-        <Tab.Screen name="Favourites" component={TestScreen} 
-           options={{
-            tabBarIcon: ({size}) => (<Icon name="staro" color="#364954" size={size} />)
-        }}
-        />
-        
-         
-        <Tab.Screen name="Graph" component={CurrencyScreen} />
-        
-        <Tab.Screen name="Home" component={HomeScreen} 
-          options={{
-            tabBarIcon: ({size}) => (<Icon name="home" color="#364954" size={size} />)
-        }}
-        
-        />
+    function HomeTabs() {
 
-        <Tab.Screen name="Settings" component={SettingsScreen} 
-          options={{
-            tabBarIcon: ({size}) => (<Icon name="setting" color="#364954" size={size} />)
-        }}
-        
-        />
-      </Tab.Navigator>
-    );
-  }
+
+      return (
+        <Tab.Navigator>
+
+          {/* Fav SCREEN SECTION ##################################### */}
+          <Tab.Screen name="Favourites" component={TestScreen} 
+            options={{
+              tabBarIcon: ({size}) => (<Icon name="staro" color="#364954" size={size} />)
+            }}/>
+          
+          {/* Currency details SCREEN SECTION ##################################### */}
+          <Tab.Screen name="Graph">
+            {(props) => <CurrencyScreen {...props} mainCurrency={mainCurrency} />}
+          </Tab.Screen>
+          
+          {/* HOME SCREEN SECTION ##################################### */}
+          <Tab.Screen name="Home"
+            options={{
+              tabBarIcon: ({size}) => (<Icon name="home" color="#364954" size={size} />)
+            }}>
+            {(props) => <HomeScreen {...props} mainCurrency={mainCurrency} />}
+          </Tab.Screen>
+
+            {/* SETTINGS SCREEN SECTION ##################################### */}
+          <Tab.Screen name="Settings"
+            options={{
+              tabBarIcon: ({size}) => (<Icon name="setting" color="#364954" size={size} />)
+            }}>
+            {(props) => <SettingsScreen {...props} mainCurrency={mainCurrency} />}
+          </Tab.Screen>
+
+        </Tab.Navigator>
+      );
+    }
   
-  function App() {
-    return (
-      <Stack.Navigator 
-        initialRouteName="TOS"
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen name="HomeTabs" component={HomeTabs} />
-        <Stack.Screen name="TOS" component={TermsOfUsage} />
-      </Stack.Navigator>
-    );
-  }
+    function App() {
+      return (
+        <Stack.Navigator 
+          initialRouteName="TOS"
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="HomeTabs" component={HomeTabs} />
+          <Stack.Screen name="TOS" component={TermsOfUsage} />
+        </Stack.Navigator>
+      );
+    }
 
   return (
 
