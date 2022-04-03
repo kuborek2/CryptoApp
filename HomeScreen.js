@@ -12,8 +12,18 @@ import {
     TouchableOpacity,
   } from 'react-native';
 import { Children } from 'react/cjs/react.production.min';
+import axios from 'axios';
 
 const coinApiKey = "0241F9BA-25FA-4312-A838-A7913E667D2A";
+
+const config = {
+    headers: {
+        "Accept": "application/json",
+        "Accept-Encoding": "deflate, gzip",
+    }
+}
+
+const iconDimensions = 150;
 
 let ExampleCoinData = [
     {
@@ -109,17 +119,74 @@ let checkIndexIsEven = (n) => {
 let currencyApiRequestNameMapper = {"€":"EUR"}
 
 const HomeScreen = ({ navigation, mainCurrency }) => {
-    // Hooks
+    // Hooks ####################################################
     const [coinList, setCoinList] = useState(ExampleCoinData);
     const [coinIconList, setCoinIconList] = useState(ExampleCoinIconData);
     const [coinExchangeRateList, setCoinExchangeRateList] = useState(ExampleCoinExchangeRatesEuro);
     const [currnecyApiRequestName, setCurrnecyApiRequestName] = useState(currencyApiRequestNameMapper[mainCurrency])
 
-    //
-    console.log(currnecyApiRequestName);
-    
+    //Coin api data requests ####################################################
+    const requestCoinListData = async () => {
+        return new Promise(async (resolve, reject) => {
+            axios
+                .get('https://rest.coinapi.io/v1/assets?apikey='+coinApiKey, config)
+                .then(res => {
+                    // console.log('statusCode for coin list: ',res.status);
+                    setCoinList(res.data);
+                    // console.log(res.data[0])
+                    resolve();
+                })
+                .catch(error => {
+                    reject(error);
+                })
+        })
+    }
 
+    //Coin api icon data requests ####################################################
+    const requestCoinIconListData = async () => {
+        return new Promise(async (resolve, reject) => {
+            axios
+                .get('https://rest.coinapi.io/v1/assets/icons/'+iconDimensions+'?apikey='+coinApiKey, config)
+                .then(res => {
+                    // console.log('statusCode for icon list: ',res.status);
+                    setCoinIconList(res.data);
+                    // console.log(res.data[0])
+                    resolve();
+                })
+                .catch(error => {
+                    reject(error);
+                })
+        })
+    }
 
+    //Coin api exchange rate data requests ####################################################
+    const requestCoinExchangeRateListData = async () => {
+        return new Promise(async (resolve, reject) => {
+            axios
+                .get('https://rest.coinapi.io/v1/exchangerate/'+currnecyApiRequestName+'?invert=1&apikey='+coinApiKey, config)
+                .then(res => {
+                    console.log('statusCode for exchange rate list: ',res.status);
+                    setCoinExchangeRateList(res.data.rates);
+                    console.log(res.data.rates[0])
+                    resolve();
+                })
+                .catch(error => {
+                    reject(error);
+                })
+        })
+    }
+
+    useEffect(() => {
+        Promise.all(
+            [
+            requestCoinIconListData(),
+            requestCoinListData(),
+            requestCoinExchangeRateListData()
+            ]
+        );
+    }, [])
+
+    // Custom elements ####################################################
     const Item = ({ item }, navigation ) => (
         <TouchableOpacity 
             style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}
@@ -134,7 +201,11 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
                     coinIconList.find(subItem => subItem.asset_id === item.asset_id).url
                 }}
             />
-            <Text style={styles.title}>{item.name}</Text>
+            <Text style={styles.title}>
+                {item.name.length < 20
+                    ? `${item.name}`
+                    : `${item.name.substring(0, 32)}...`}
+            </Text>
             <Text style={styles.counter}>{mainCurrency} {coinExchangeRateList.find(subItem => subItem.asset_id_quote === item.asset_id) == null 
                     ? '00.00' :
                     coinExchangeRateList.find(subItem => subItem.asset_id_quote === item.asset_id).rate}</Text>
@@ -173,7 +244,7 @@ const styles = StyleSheet.create({
         height: 100,
       },
     title: {
-        fontSize: 26,
+        fontSize: 18,
         marginStart: 20,
       },
     currencyIcon: {
