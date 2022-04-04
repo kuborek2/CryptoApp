@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     SafeAreaView,
     ScrollView,
@@ -9,29 +9,25 @@ import {
     View,
     Image,
     FlatList,
+    TouchableOpacity,
   } from 'react-native';
 import { Children } from 'react/cjs/react.production.min';
+import axios from 'axios';
 
+const coinApiKey = "8C18FFE2-77F9-43A2-B19D-294E7590D478";
+// 8C18FFE2-77F9-43A2-B19D-294E7590D478 - wojtkowy
+// 0241F9BA-25FA-4312-A838-A7913E667D2A - jakubwy
+
+const config = {
+    headers: {
+        "Accept": "application/json",
+        "Accept-Encoding": "deflate, gzip",
+    }
+}
+
+const iconDimensions = 150;
 
 let ExampleCoinData = [
-    {
-      "asset_id": "USD",
-      "name": "US Dollar",
-      "type_is_crypto": 0,
-      "data_quote_start": "2014-02-24T17:43:05.0000000Z",
-      "data_quote_end": "2022-03-16T17:55:46.1599599Z",
-      "data_orderbook_start": "2014-02-24T17:43:05.0000000Z",
-      "data_orderbook_end": "2020-08-05T14:38:00.7082850Z",
-      "data_trade_start": "2010-07-17T23:09:17.0000000Z",
-      "data_trade_end": "2022-03-16T17:58:45.6640000Z",
-      "data_symbols_count": 100137,
-      "volume_1hrs_usd": 1867842347258.98,
-      "volume_1day_usd": 23978785037586.37,
-      "volume_1mth_usd": 1101215572889127.9,
-      "id_icon": "0a4185f2-1a03-4a7c-b866-ba7076d8c73b",
-      "data_start": "2010-07-17",
-      "data_end": "2022-03-16"
-    },
     {
       "asset_id": "BTC",
       "name": "Bitcoin",
@@ -50,35 +46,13 @@ let ExampleCoinData = [
       "id_icon": "4caf2b16-a017-4e26-a348-2cea69c34cba",
       "data_start": "2010-07-17",
       "data_end": "2022-03-16"
-    },
-    {
-        "asset_id": "NIS",
-        "name": "NIS",
-        "type_is_crypto": 1,
-        "data_quote_start": "2018-01-24T00:42:50.1443495Z",
-        "data_quote_end": "2022-03-16T17:52:02.7844230Z",
-        "data_orderbook_start": "2018-01-24T00:42:50.1443495Z",
-        "data_orderbook_end": "2020-08-05T14:37:37.8190850Z",
-        "data_trade_start": "2013-03-15T12:48:43.0000000Z",
-        "data_trade_end": "2020-06-25T13:09:04.0000000Z",
-        "data_symbols_count": 8,
-        "volume_1hrs_usd": 0,
-        "volume_1day_usd": 0,
-        "volume_1mth_usd": 0,
-        "price_usd": 0.29642410289863413,
-        "data_start": "2013-03-15",
-        "data_end": "2022-03-16"
-      }
+    }
 ]
 
 let ExampleCoinIconData = [
     {
         "asset_id": "BTC",
         "url": "https://s3.eu-central-1.amazonaws.com/bbxt-static-icons/type-id/png_512/4caf2b16a0174e26a3482cea69c34cba.png"
-    },
-    {
-        "asset_id": "USD",
-        "url": "https://s3.eu-central-1.amazonaws.com/bbxt-static-icons/type-id/png_512/0a4185f21a034a7cb866ba7076d8c73b.png"
     },
 ]
 
@@ -88,59 +62,129 @@ let ExampleCoinExchangeRatesEuro = [
         "asset_id_quote": "BTC",
         "rate": 0.000027361876161065196
     },
-    {
-        "time": "2022-03-16T19:12:44.5000000Z",
-        "asset_id_quote": "NIS",
-        "rate": 3.6894116589882664
-    },
-    {
-        "time": "2022-03-16T19:12:44.4000000Z",
-        "asset_id_quote": "USD",
-        "rate": 1.0994376837653563
-    },
 ]
 
 let checkIndexIsEven = (n) => {
     return n % 2 == 0;
 }
 
-const Item = ({ item }) => (
-    <View style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}>
-        <Image
-            style={styles.currencyIcon}
-            source={{uri: ExampleCoinIconData.find(subItem => subItem.asset_id === item.asset_id) == null 
-                ? 'https://cdn-icons-png.flaticon.com/128/5169/5169216.png' :
-                ExampleCoinIconData.find(subItem => subItem.asset_id === item.asset_id).url
-            }}
-        />
-        <Text style={styles.title}>{item.name}</Text>
-        <Text style={styles.counter}>€ {ExampleCoinExchangeRatesEuro.find(subItem => subItem.asset_id_quote === item.asset_id) == null 
-                ? '00.00' :
-                ExampleCoinExchangeRatesEuro.find(subItem => subItem.asset_id_quote === item.asset_id).rate}</Text>
-    </View>
-  );
+const showToast = (message, isShort = true, gravity = ToastAndroid.CENTER) => {
+    ToastAndroid.showWithGravity(message, (isShort ? ToastAndroid.SHORT : ToastAndroid.LONG), gravity);
+  };
 
-const HomeScreen = ({ navigation }) => {
+let currencyApiRequestNameMapper = {"€":"EUR"}
+
+const HomeScreen = ({ navigation, mainCurrency }) => {
+    // Hooks ####################################################
+    const [coinList, setCoinList] = useState(ExampleCoinData);
+    const [coinIconList, setCoinIconList] = useState(ExampleCoinIconData);
+    const [coinExchangeRateList, setCoinExchangeRateList] = useState(ExampleCoinExchangeRatesEuro);
+    const [currnecyApiRequestName, setCurrnecyApiRequestName] = useState(currencyApiRequestNameMapper[mainCurrency])
+
+    //Coin api data requests ####################################################
+    const requestCoinListData = async () => {
+        return new Promise(async (resolve, reject) => {
+            axios
+                .get('https://rest.coinapi.io/v1/assets?apikey='+coinApiKey, config)
+                .then(res => {
+                    console.log('statusCode for coin list: ',res.status);
+                    setCoinList(res.data);
+                    // console.log(res.data[0])
+                    resolve();
+                })
+                .catch(error => {
+                    reject(error);
+                })
+        })
+    }
+
+    //Coin api icon data requests ####################################################
+    const requestCoinIconListData = async () => {
+        return new Promise(async (resolve, reject) => {
+            axios
+                .get('https://rest.coinapi.io/v1/assets/icons/'+iconDimensions+'?apikey='+coinApiKey, config)
+                .then(res => {
+                    // console.log('statusCode for icon list: ',res.status);
+                    setCoinIconList(res.data);
+                    // console.log(res.data[0])
+                    resolve();
+                })
+                .catch(error => {
+                    reject(error);
+                })
+        })
+    }
+
+    //Coin api exchange rate data requests ####################################################
+    const requestCoinExchangeRateListData = async () => {
+        return new Promise(async (resolve, reject) => {
+            axios
+                .get('https://rest.coinapi.io/v1/exchangerate/'+currnecyApiRequestName+'?invert=1&apikey='+coinApiKey, config)
+                .then(res => {
+                    // console.log('statusCode for exchange rate list: ',res.status);
+                    setCoinExchangeRateList(res.data.rates);
+                    // console.log(res.data.rates[0])
+                    resolve();
+                })
+                .catch(error => {
+                    reject(error);
+                })
+        })
+    }
+
+    useEffect(() => {
+        Promise.all(
+            [
+            // requestCoinIconListData(),
+            requestCoinListData(),
+            // requestCoinExchangeRateListData()
+            ]
+        );
+    }, [])
+
+    // console.log(" coinlist length: ",coinList.length);
+    // console.log(" coinlist exchange rate length: ",coinExchangeRateList.find(subItem => subItem.asset_id_quote == "PLN"));
+    // console.log(coinExchangeRateList.find(subItem => subItem.asset_id_quote == "PLN").rate);
+    // console.log(typeof(coinExchangeRateList.find(subItem => subItem.asset_id_quote == "PLN").rate));
+    // console.log(" coinlist icon length: ",coinIconList.length);
+
+
+    // Custom elements ####################################################
+    const Item = ({ item }, navigation ) => (
+        <TouchableOpacity 
+            style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}
+            onPress={() => navigation.navigate('Graph', {
+                currencyName: item.asset_id,
+              })}
+            >
+            <Image
+                style={styles.currencyIcon}
+                source={{uri: coinIconList.find(subItem => subItem.asset_id === item.asset_id) == null 
+                    ? 'https://cdn-icons-png.flaticon.com/128/5169/5169216.png' :
+                    coinIconList.find(subItem => subItem.asset_id === item.asset_id).url
+                }}
+            />
+            <Text style={styles.title}>
+                {item.name.length < 20
+                    ? `${item.name}`
+                    : `${item.name.substring(0, 32)}...`}
+            </Text>
+            <Text style={styles.counter}>{mainCurrency} {coinExchangeRateList.find(subItem => subItem.asset_id_quote == item.asset_id) == null 
+                ? '00.00' :
+                coinExchangeRateList.find(subItem => subItem.asset_id_quote === item.asset_id).rate}
+                </Text>
+        </TouchableOpacity>
+      );
 
     return (
-        <ScrollView>
-            <View style={styles.container}>
-                <FlatList
-                    data={ExampleCoinData}
-                    renderItem={Item}
-                    keyExtractor={item => item.asset_id}
-                />
-            </View>
-        </ScrollView>
-
-        // <SafeAreaView style={styles.container}>
-        // <FlatList
-        // data={DATA}
-        // renderItem={renderItem}
-        // keyExtractor={item => item.id}
-        // />
-        // </SafeAreaView>
-
+        <View style={styles.container}>
+            <FlatList
+                data={coinList}
+                renderItem={(item) => Item(item, navigation)}
+                keyExtractor={item => item.asset_id}
+                extraData={coinExchangeRateList}
+            />
+        </View>
     );
 
 }
@@ -165,7 +209,7 @@ const styles = StyleSheet.create({
         height: 100,
       },
     title: {
-        fontSize: 26,
+        fontSize: 18,
         marginStart: 20,
       },
     currencyIcon: {

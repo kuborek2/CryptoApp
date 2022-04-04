@@ -142,7 +142,12 @@ const dataLengthChecker = (data) => {
 // 1 Month -> 12HRS to coinapi
 // 1 Year - > 5DAY to coin api
 
-const CurrencyScreen = ({ navigation, mainCurrency }) => { 
+const CurrencyScreen = ({ route, navigation, mainCurrency }) => {
+    //Passed params
+    const { currencyName } = route.params;
+    console.log(currencyName)
+
+    //Hooks
     const [change, setChange] = useState('00.00'+"%")
     const [value, setValue] = useState('00.00'+mainCurrency)
     const [valueStyle, setValueStyle] = useState(styles.textBlack)
