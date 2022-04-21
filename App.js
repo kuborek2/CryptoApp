@@ -36,8 +36,40 @@ import TermsOfUsage from './TermsOfUsage';
 import TestScreen from './TestScreen';
 import HomeScreen from './HomeScreen';
 import CurrencyScreen from './Currency_screen';
+import FavouritesScreen from './FavouritesScreen';
 
 LogBox.ignoreAllLogs();
+
+if (!__DEV__) {
+  // eslint-disable-line no-undef
+  [
+    'assert',
+    'clear',
+    'count',
+    'debug',
+    'dir',
+    'dirxml',
+    'error',
+    'exception',
+    'group',
+    'groupCollapsed',
+    'groupEnd',
+    'info',
+    'log',
+    'profile',
+    'profileEnd',
+    'table',
+    'time',
+    'timeEnd',
+    'timeStamp',
+    'trace',
+    'warn',
+  ].forEach(methodName => {
+    console[methodName] = () => {
+      /* noop */
+    };
+  });
+}
 
 import SettingsScreen from './SettingsScreen';
 
@@ -60,7 +92,8 @@ import SettingsScreen from './SettingsScreen';
           >
 
           {/* Fav SCREEN SECTION ##################################### */}
-          <Tab.Screen name="Favourites" component={TestScreen} 
+          <Tab.Screen name="Favourites" component={FavouritesScreen} 
+            unmountInactiveRoutes= {true}
             options={{
               tabBarIcon: ({size}) => (<Icon name="staro" color="#364954" size={size} />)
             }}/>

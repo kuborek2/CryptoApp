@@ -210,6 +210,7 @@ const CurrencyScreen = ({ route, navigation, mainCurrency }) => {
     const getInitialData = () => {
         console.log("changed inital data")
         let { currencyName, mainCurrencyName } = route.params;
+        currencyName = currencyName.replace(/[\r\n]/gm, '');
         setCurrencyName(currencyName);
         setMainCurrencyName(mainCurrencyName);
         console.log("currency name: ",currencyName," mainCurrencyname: ",mainCurrencyName);
@@ -220,6 +221,78 @@ const CurrencyScreen = ({ route, navigation, mainCurrency }) => {
         let preparedData = prepareData(customData);
         setData(preparedData);
     }, [])
+
+        // Async storage secotion #################################################
+
+        const saveAsyncStroageData = async () => {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    // Load data
+                    let favoritesArray = await AsyncStorage.getItem('FAVORITE_CURRENCIES');
+                    favoritesArray = JSON.parse(favoritesArray);
+                    console.log("favoritesArray in save: ");
+                    console.log(favoritesArray)
+    
+                    // Check if empty -> if yes make empty table
+                    if( favoritesArray === undefined || favoritesArray === null ){
+                        favoritesArray = [];
+                        favoritesArray.push(currencyName)
+                        setIsFavorite(true);
+                    } else {
+                        if( !isFavorite ){
+                            favoritesArray.push(currencyName)
+                            setIsFavorite(true);
+                        } else {
+                            favoritesArray.pop(currencyName)
+                            setIsFavorite(false);
+                        }
+                    }
+                    favoritesArray = JSON.stringify(favoritesArray);
+                    AsyncStorage.setItem('FAVORITE_CURRENCIES',favoritesArray);
+                    console.log(isFavorite)
+                    resolve();
+                } catch(e) {
+                    console.log("Something went wrong near aynsc favorites data change");
+                    reject(e);
+                }
+            })
+          }
+    
+        const getAsyncStorageData = async () => {
+            return new Promise( async (resolve, reject) => {
+                try {
+                    //Load data
+                    let favoritesArray = await AsyncStorage.getItem('FAVORITE_CURRENCIES');
+                    favoritesArray = JSON.parse(favoritesArray);
+                    console.log("favoritesArray in get: ",typeof(favoritesArray));
+                    console.log("favoritesArray in get: ",favoritesArray);
+                    console.log("if in tabel includes: ",favoritesArray.includes(currencyName))
+    
+                    //Check if empty -> if yes make empty table
+                    if( favoritesArray === undefined || favoritesArray === null )
+                        favoritesArray = new Array();
+    
+                    // set Hook for button text
+                    if( favoritesArray.includes(currencyName) ){
+                        console.log("chaneing setisfavorrite to true")
+                        setIsFavorite(true);
+                    } else {
+                        setIsFavorite(false);
+                    }
+                    // Resolves promise after chaneing data    
+                    resolve();
+                } catch(e) {
+                    console.log("Something went wrong near aynsc favorites first data load");
+                    reject(e);
+                }
+            })
+        }
+    
+        useEffect(() => {
+            if( isUpdated )
+                getAsyncStorageData();
+                
+        }, [isUpdated])
 
     // Loading data from coin api section ####################################
 
@@ -318,7 +391,7 @@ const CurrencyScreen = ({ route, navigation, mainCurrency }) => {
                 .get('https://rest.coinapi.io/v1/exchangerate/'+currencyName+'/'+mainCurrencyName+'/history?period_id='+pierod+'&time_start='+time_start+'&time_end='+time_end+'&apikey='+coinApiKey, config)
                 .then(res => {
                     console.log('statusCode for coin list: ',res.status);
-                    setDataOneMonth(res.data);
+                    setDataOneYear(res.data);
                     // console.log(res.data[0])
                     resolve();
                 })
@@ -340,72 +413,6 @@ const CurrencyScreen = ({ route, navigation, mainCurrency }) => {
                 ]
             );
     }, [isUpdated])
-
-    // Async storage secotion #################################################
-
-    const saveAsyncStroageData = async () => {
-        return new Promise(async (resolve, reject) => {
-            try {
-                // Load data
-                let favoritesArray = await AsyncStorage.getItem('FAVORITE_CURRENCIES');
-                favoritesArray = JSON.parse(favoritesArray);
-                console.log("favoritesArray in save: ",favoritesArray);
-
-                //Check if empty -> if yes make empty table
-                if( favoritesArray === undefined || favoritesArray === null ){
-                    favoritesArray = [];
-                    favoritesArray.push(currentCurrency)
-                    setIsFavorite(true);
-                } else {
-                    if( !isFavorite ){
-                        favoritesArray.push(currentCurrency)
-                        setIsFavorite(true);
-                    } else {
-                        favoritesArray.pop(currentCurrency)
-                        setIsFavorite(false);
-                    }
-                }
-                favoritesArray = JSON.stringify(favoritesArray);
-                AsyncStorage.setItem('FAVORITE_CURRENCIES',favoritesArray);
-                console.log(isFavorite)
-                resolve();
-            } catch(e) {
-                console.log("Something went wrong near aynsc favorites data change");
-                reject(e);
-            }
-        })
-      }
-
-    const getAsyncStorageData = async () => {
-        return new Promise( async (resolve, reject) => {
-            try {
-                //Load data
-                let favoritesArray = await AsyncStorage.getItem('FAVORITE_CURRENCIES');
-                favoritesArray = JSON.parse(favoritesArray);
-                console.log("favoritesArray in get: ",typeof(favoritesArray));
-                console.log("favoritesArray in get: ",favoritesArray);
-
-                //Check if empty -> if yes make empty table
-                if( favoritesArray === undefined || favoritesArray === null )
-                    favoritesArray = new Array();
-
-                // set Hook for button text
-                if( favoritesArray.includes(currentCurrency) )
-                    setIsFavorite(true);
-                else 
-                    setIsFavorite(false);
-                // Resolves promise after chaneing data    
-                resolve();
-            } catch(e) {
-                console.log("Something went wrong near aynsc favorites first data load");
-                reject(e);
-            }
-        })
-    }
-
-    useEffect(() => {
-        getAsyncStorageData();
-    }, [])
 
     // ACustom graph items section #################################################
 

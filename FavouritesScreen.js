@@ -14,12 +14,14 @@ import {
   } from 'react-native';
 import { Children } from 'react/cjs/react.production.min';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const coinApiKey = "DF7C3A9B-D7C7-40A0-B4C5-2AE781249E7D";
+const coinApiKey = "0241F9BA-25FA-4312-A838-A7913E667D2A";
 // 8C18FFE2-77F9-43A2-B19D-294E7590D478 - wojtkowy
 // 0241F9BA-25FA-4312-A838-A7913E667D2A - jakubwy
 // DF7C3A9B-D7C7-40A0-B4C5-2AE781249E7D - wojtkowy drugi
 // 358EDCE6-2D79-4BFA-BEDA-AA403745B09D another one
+//E7BB5FA1-BAD5-4A32-86E2-E135C7A5006D
 
 const config = {
     headers: {
@@ -77,12 +79,41 @@ const showToast = (message, isShort = true, gravity = ToastAndroid.CENTER) => {
 
 let currencyApiRequestNameMapper = {"€":"EUR"}
 
-const HomeScreen = ({ navigation, mainCurrency }) => {
+const FavouritesScreen = ({ navigation, mainCurrency }) => {
     // Hooks ####################################################
     const [coinList, setCoinList] = useState(ExampleCoinData);
     const [coinIconList, setCoinIconList] = useState(ExampleCoinIconData);
-    const [coinExchangeRateList, setCoinExchangeRateList] = useState(ExampleCoinExchangeRatesEuro);
     const [currnecyApiRequestName, setCurrnecyApiRequestName] = useState(currencyApiRequestNameMapper[mainCurrency])
+    const [favourtiessList, setFavourtiessList] = useState([])
+
+    // Async storage secotion #################################################
+    const getAsyncStorageData = async () => {
+        return new Promise( async (resolve, reject) => {
+            try {
+                //Load data
+                let favoritesArray = await AsyncStorage.getItem('FAVORITE_CURRENCIES');
+                favoritesArray = JSON.parse(favoritesArray);
+                console.log("favoritesArray in get: ",typeof(favoritesArray));
+                console.log("favoritesArray in get: ",favoritesArray);
+
+                //Check if empty -> if yes make empty table
+                if( favoritesArray === undefined || favoritesArray === null )
+                    favoritesArray = new Array();
+
+                // set Hook for favourites array
+                setFavourtiessList(favoritesArray);
+                // Resolves promise after chaneing data    
+                resolve();
+            } catch(e) {
+                console.log("Something went wrong near aynsc favorites first data load");
+                reject(e);
+            }
+        })
+    }
+
+    useEffect(() => {
+        getAsyncStorageData();
+    }, [])
 
     //Coin api data requests ####################################################
     const requestCoinListData = async () => {
@@ -90,7 +121,7 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
             axios
                 .get('https://rest.coinapi.io/v1/assets?apikey='+coinApiKey, config)
                 .then(res => {
-                    console.log('statusCode for coin list: ',res.status);
+                    console.log('statusCode for coin list in favorites: ',res.status);
                     setCoinList(res.data);
                     // console.log(res.data[0])
                     resolve();
@@ -107,7 +138,7 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
             axios
                 .get('https://rest.coinapi.io/v1/assets/icons/'+iconDimensions+'?apikey='+coinApiKey, config)
                 .then(res => {
-                    console.log('statusCode for icon list: ',res.status);
+                    console.log('statusCode for icon list in favorites: ',res.status);
                     setCoinIconList(res.data);
                     // console.log(res.data[0])
                     resolve();
@@ -118,29 +149,12 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
         })
     }
 
-    //Coin api exchange rate data requests ####################################################
-    const requestCoinExchangeRateListData = async () => {
-        return new Promise(async (resolve, reject) => {
-            axios
-                .get('https://rest.coinapi.io/v1/exchangerate/'+currnecyApiRequestName+'?invert=1&apikey='+coinApiKey, config)
-                .then(res => {
-                    console.log('statusCode for exchange rate list: ',res.status);
-                    setCoinExchangeRateList(res.data.rates);
-                    // console.log(res.data.rates[0])
-                    resolve();
-                })
-                .catch(error => {
-                    reject(error);
-                })
-        })
-    }
 
     useEffect(() => {
         Promise.all(
             [
             requestCoinIconListData(),
             requestCoinListData(),
-            requestCoinExchangeRateListData()
             ]
         );
     }, [])
@@ -153,13 +167,14 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
 
 
     // Custom elements ####################################################
-    const Item = ({ item }, navigation ) => (
+    const Item = ({ item }, navigation) => (
+        favourtiessList.includes(item.asset_id) ?
         <TouchableOpacity 
             style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}
             onPress={() => navigation.navigate('Graph', {
                 currencyName: item.asset_id,
                 mainCurrencyName: currnecyApiRequestName,
-              })}
+                })}
             >
             <Image
                 style={styles.currencyIcon}
@@ -173,12 +188,9 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
                     ? `${item.name}`
                     : `${item.name.substring(0, 32)}...`}
             </Text>
-            <Text style={styles.counter}>{mainCurrency} {coinExchangeRateList.find(subItem => subItem.asset_id_quote == item.asset_id) == null 
-                ? '00.00' :
-                coinExchangeRateList.find(subItem => subItem.asset_id_quote === item.asset_id).rate}
-                </Text>
         </TouchableOpacity>
-      );
+        : null
+        );
 
     return (
         <View style={styles.container}>
@@ -229,5 +241,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default HomeScreen;
-
+export default FavouritesScreen;
