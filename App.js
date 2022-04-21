@@ -66,9 +66,9 @@ import SettingsScreen from './SettingsScreen';
             }}/>
           
           {/* Currency details SCREEN SECTION ##################################### */}
-          <Tab.Screen name="Graph">
+          {/* <Tab.Screen name="Graph">
             {(props) => <CurrencyScreen {...props} mainCurrency={mainCurrency} />}
-          </Tab.Screen>
+          </Tab.Screen> */}
           
           {/* HOME SCREEN SECTION ##################################### */}
           <Tab.Screen name="Home"
@@ -100,6 +100,9 @@ import SettingsScreen from './SettingsScreen';
         >
           <Stack.Screen name="HomeTabs" component={HomeTabs} />
           <Stack.Screen name="TOS" component={TermsOfUsage} />
+          <Stack.Screen name="Graph">
+            {(props) => <CurrencyScreen {...props} mainCurrency={mainCurrency} />}
+          </Stack.Screen>
         </Stack.Navigator>
       );
     }
