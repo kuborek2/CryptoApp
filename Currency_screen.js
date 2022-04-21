@@ -12,7 +12,8 @@ import {
     Dimensions,
     TouchableOpacity,
     TouchableHighlight,
-    Button
+    Button,
+    ToastAndroid
   } from 'react-native';
 import {
     LineChart,
@@ -25,12 +26,32 @@ import {
 import { Children } from 'react/cjs/react.production.min';
 import Moment from 'moment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { useIsFocused } from '@react-navigation/native';
 
-const customData = require('./btcVsusd.json');
-const customDataOneYear = require('./btcVSusd1Year.json');
+const customData = require('./plnVSusd.json');
+const customDataOneYear = require('./plnVSusd.json');
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+
+const coinApiKey = "E7BB5FA1-BAD5-4A32-86E2-E135C7A5006D";
+// 8C18FFE2-77F9-43A2-B19D-294E7590D478 - wojtkowy
+// 0241F9BA-25FA-4312-A838-A7913E667D2A - jakubwy
+// DF7C3A9B-D7C7-40A0-B4C5-2AE781249E7D - wojtkowy drugi
+// 358EDCE6-2D79-4BFA-BEDA-AA403745B09D another one
+
+const config = {
+    headers: {
+        "Accept": "application/json",
+        "Accept-Encoding": "deflate, gzip",
+    }
+}
+
+const showToast = (message, isShort = true, gravity = ToastAndroid.CENTER) => {
+    ToastAndroid.showWithGravity(message, (isShort ? ToastAndroid.SHORT : ToastAndroid.LONG), gravity);
+  };
+
 
 const exampleData = {
     labels: ["January", "February", "March", "April", "May", "June"],
@@ -55,6 +76,11 @@ const pointsOnChart = 20;
 const prepareData = (dataToPrepare) => {
     if( dataToPrepare.length == 0 )
         return [];
+
+    if( dataToPrepare == exampleData ){
+        showToast("Data is not recived yet")
+        return exampleData;
+    }
 
     let labels = [
         Moment(dataToPrepare[0].time_period_start).format('MMMM Do YYYY'),
@@ -143,9 +169,22 @@ const dataLengthChecker = (data) => {
 // 1 Year - > 5DAY to coin api
 
 const CurrencyScreen = ({ route, navigation, mainCurrency }) => {
-    //Passed params
-    const { currencyName } = route.params;
-    console.log(currencyName)
+
+    const isFocused = useIsFocused();
+
+    useEffect(() => {
+        console.log("called");
+ 
+        // Call only when screen open or when back on screen 
+        if(isFocused){ 
+            getInitialData();
+        } else {
+            setIsUpdated(false);
+        }
+    }, [isFocused]);
+
+    //Checking if params are actual
+    const [isUpdated, setIsUpdated] = useState(false);
 
     //Hooks
     const [change, setChange] = useState('00.00'+"%")
@@ -154,13 +193,153 @@ const CurrencyScreen = ({ route, navigation, mainCurrency }) => {
     const [data, setData] = useState(exampleData);
     const [isLoading, setIsLoading] = useState(false);
 
-    const [currentCurrency, setCurrentCurrency] = useState("BTC")
+    // Hooks for taht from other screens
+    const [currentCurrency, setCurrentCurrency] = useState(currencyName);
     const [isFavorite, setIsFavorite] = useState(false);
+
+    //Current currecies to compare
+    const [currencyName, setCurrencyName] = useState("");
+    const [mainCurrencyName, setMainCurrencyName] = useState("")
+
+    //Hooks for timely data
+    const [dataOneDay, setDataOneDay] = useState(exampleData);
+    const [dataOneWeek, setDataOneWeek] = useState(exampleData);
+    const [dataOneMonth, setDataOneMonth] = useState(exampleData);
+    const [dataOneYear, setDataOneYear] = useState(exampleData);
+
+    const getInitialData = () => {
+        console.log("changed inital data")
+        let { currencyName, mainCurrencyName } = route.params;
+        setCurrencyName(currencyName);
+        setMainCurrencyName(mainCurrencyName);
+        console.log("currency name: ",currencyName," mainCurrencyname: ",mainCurrencyName);
+        setIsUpdated(true);
+    }
 
     useEffect(() =>  {
         let preparedData = prepareData(customData);
         setData(preparedData);
     }, [])
+
+    // Loading data from coin api section ####################################
+
+    const requestOneDayData = async () => {
+        return new Promise(async (resolve, reject) => {
+            let pierod = "20MIN"
+            // time end
+            let time_end = Moment().format();
+            time_end = time_end.substring(0, time_end.length-6)
+
+            // time start
+            let time_start = Moment().subtract(1,'day').format();
+            time_start = time_start.substring(0, time_start.length-6)
+
+            axios
+                .get('https://rest.coinapi.io/v1/exchangerate/'+currencyName+'/'+mainCurrencyName+'/history?period_id='+pierod+'&time_start='+time_start+'&time_end='+time_end+'&apikey='+coinApiKey, config)
+                .then(res => {
+                    console.log('statusCode for coin list: ',res.status);
+                    setDataOneDay(res.data);
+                    // console.log(res.data[0])
+                    resolve();
+                })
+                .catch(error => {
+                    setDataOneDay(exampleData);
+                    reject(error);
+                })
+        })
+    }
+
+    //Coin api icon data requests ####################################################
+    const requestOneWeekData = async () => {
+        return new Promise(async (resolve, reject) => {
+            let pierod = "2HRS"
+            // time end
+            let time_end = Moment().format();
+            time_end = time_end.substring(0, time_end.length-6)
+
+            // time start
+            let time_start = Moment().subtract(7,'day').format();
+            time_start = time_start.substring(0, time_start.length-6)
+
+            axios
+                .get('https://rest.coinapi.io/v1/exchangerate/'+currencyName+'/'+mainCurrencyName+'/history?period_id='+pierod+'&time_start='+time_start+'&time_end='+time_end+'&apikey='+coinApiKey, config)
+                .then(res => {
+                    console.log('statusCode for coin list: ',res.status);
+                    setDataOneWeek(res.data);
+                    // console.log(res.data[0])
+                    resolve();
+                })
+                .catch(error => {
+                    setDataOneWeek(exampleData);
+                    reject(error);
+                })
+        })
+    }
+
+    //Coin api exchange rate data requests ####################################################
+    const requestOneMonthData = async () => {
+        return new Promise(async (resolve, reject) => {
+            let pierod = "12HRS"
+            // time end
+            let time_end = Moment().format();
+            time_end = time_end.substring(0, time_end.length-6)
+
+            // time start
+            let time_start = Moment().subtract(30,'day').format();
+            time_start = time_start.substring(0, time_start.length-6)
+
+            axios
+                .get('https://rest.coinapi.io/v1/exchangerate/'+currencyName+'/'+mainCurrencyName+'/history?period_id='+pierod+'&time_start='+time_start+'&time_end='+time_end+'&apikey='+coinApiKey, config)
+                .then(res => {
+                    console.log('statusCode for coin list: ',res.status);
+                    setDataOneMonth(res.data);
+                    // console.log(res.data[0])
+                    resolve();
+                })
+                .catch(error => {
+                    setDataOneMonth(exampleData);
+                    reject(error);
+                })
+        })
+    }
+
+    const requestOneYearhData = async () => {
+        return new Promise(async (resolve, reject) => {
+            let pierod = "5DAY"
+            // time end
+            let time_end = Moment().format();
+            time_end = time_end.substring(0, time_end.length-6)
+
+            // time start
+            let time_start = Moment().subtract(1,'year').format();
+            time_start = time_start.substring(0, time_start.length-6)
+
+            axios
+                .get('https://rest.coinapi.io/v1/exchangerate/'+currencyName+'/'+mainCurrencyName+'/history?period_id='+pierod+'&time_start='+time_start+'&time_end='+time_end+'&apikey='+coinApiKey, config)
+                .then(res => {
+                    console.log('statusCode for coin list: ',res.status);
+                    setDataOneMonth(res.data);
+                    // console.log(res.data[0])
+                    resolve();
+                })
+                .catch(error => {
+                    setDataOneYear(exampleData);
+                    reject(error);
+                })
+        })
+    }
+
+    useEffect(() => {
+        if( isUpdated )
+            Promise.all(
+                [
+                    requestOneDayData(),
+                    requestOneWeekData(),
+                    requestOneMonthData(),
+                    requestOneYearhData()
+                ]
+            );
+    }, [isUpdated])
 
     // Async storage secotion #################################################
 
@@ -258,10 +437,10 @@ const CurrencyScreen = ({ route, navigation, mainCurrency }) => {
 
     // Change data on graph #################################################
 
-    const reloadData = (data, pierod) => {
+    const reloadData = (data) => {
         setIsLoading(true);
-        let modifiedData = ModifyData(data, pierod);
-        let preparedData = prepareData(modifiedData);
+        // let modifiedData = ModifyData(data, pierod);
+        let preparedData = prepareData(data);
         setData(preparedData);
         setIsLoading(false);
     }
@@ -270,7 +449,7 @@ const CurrencyScreen = ({ route, navigation, mainCurrency }) => {
         !isLoading ? (
             <View style={styles.headerContainer}>
                 <Text style={[styles.headerBox, styles.headerBox, styles.leftHeaderText,]}>
-                    BTC {value}
+                    {currencyName} {value}
                 </Text>
 
                 <View style={styles.separator}/>
@@ -296,10 +475,10 @@ const CurrencyScreen = ({ route, navigation, mainCurrency }) => {
                 <View style={styles.separator}/>
 
                 <View style={styles.buttonsContainer}>
-                    <GraphChangeBtn name={"1D"} onPress={() => reloadData(customData, 40)} /> 
-                    <GraphChangeBtn name={"1W"} onPress={() => reloadData(customData, 80)} />
-                    <GraphChangeBtn name={"1M"} onPress={() => reloadData(customDataOneYear, 30)} />
-                    <GraphChangeBtn name={"1Y"} onPress={() => reloadData(customDataOneYear, 365)} />
+                    <GraphChangeBtn name={"1D"} onPress={() => reloadData(dataOneDay)} /> 
+                    <GraphChangeBtn name={"1W"} onPress={() => reloadData(dataOneWeek)} />
+                    <GraphChangeBtn name={"1M"} onPress={() => reloadData(dataOneMonth)} />
+                    <GraphChangeBtn name={"1Y"} onPress={() => reloadData(dataOneYear)} />
                 </View>
 
                 <View style={styles.separator}/>
@@ -401,4 +580,3 @@ const styles = StyleSheet.create({
 });
 
 export default CurrencyScreen;
-

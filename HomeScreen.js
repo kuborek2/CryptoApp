@@ -10,13 +10,16 @@ import {
     Image,
     FlatList,
     TouchableOpacity,
+    ToastAndroid
   } from 'react-native';
 import { Children } from 'react/cjs/react.production.min';
 import axios from 'axios';
 
-const coinApiKey = "8C18FFE2-77F9-43A2-B19D-294E7590D478";
+const coinApiKey = "E7BB5FA1-BAD5-4A32-86E2-E135C7A5006D";
 // 8C18FFE2-77F9-43A2-B19D-294E7590D478 - wojtkowy
 // 0241F9BA-25FA-4312-A838-A7913E667D2A - jakubwy
+// DF7C3A9B-D7C7-40A0-B4C5-2AE781249E7D - wojtkowy drugi
+// 358EDCE6-2D79-4BFA-BEDA-AA403745B09D another one
 
 const config = {
     headers: {
@@ -104,7 +107,7 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
             axios
                 .get('https://rest.coinapi.io/v1/assets/icons/'+iconDimensions+'?apikey='+coinApiKey, config)
                 .then(res => {
-                    // console.log('statusCode for icon list: ',res.status);
+                    console.log('statusCode for icon list: ',res.status);
                     setCoinIconList(res.data);
                     // console.log(res.data[0])
                     resolve();
@@ -121,7 +124,7 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
             axios
                 .get('https://rest.coinapi.io/v1/exchangerate/'+currnecyApiRequestName+'?invert=1&apikey='+coinApiKey, config)
                 .then(res => {
-                    // console.log('statusCode for exchange rate list: ',res.status);
+                    console.log('statusCode for exchange rate list: ',res.status);
                     setCoinExchangeRateList(res.data.rates);
                     // console.log(res.data.rates[0])
                     resolve();
@@ -135,9 +138,9 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
     useEffect(() => {
         Promise.all(
             [
-            // requestCoinIconListData(),
+            requestCoinIconListData(),
             requestCoinListData(),
-            // requestCoinExchangeRateListData()
+            requestCoinExchangeRateListData()
             ]
         );
     }, [])
@@ -155,6 +158,7 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
             style={[styles.item, { backgroundColor: checkIndexIsEven(item.type_is_crypto) ? '#99AEBB' : '#51BBE9'}]}
             onPress={() => navigation.navigate('Graph', {
                 currencyName: item.asset_id,
+                mainCurrencyName: currnecyApiRequestName,
               })}
             >
             <Image
@@ -182,7 +186,6 @@ const HomeScreen = ({ navigation, mainCurrency }) => {
                 data={coinList}
                 renderItem={(item) => Item(item, navigation)}
                 keyExtractor={item => item.asset_id}
-                extraData={coinExchangeRateList}
             />
         </View>
     );
