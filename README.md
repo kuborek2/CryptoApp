@@ -36,5 +36,9 @@ Do poprawnego wyświetlania danych potrzebujemy conajmniej 40 punktów czyli.<br
 1 Month -> 12HRS to coinapi<br/>
 1 Year - > 5DAY to coin api<br/>
 
+Dokumentacja:
+[Zaawansowanie programowanie aplikacji moblinych II.pdf](https://github.com/kuborek2/CryptoApp/files/8543621/Zaawansowanie.programowanie.aplikacji.moblinych.II.pdf)
+
+
 
 
